@@ -14,6 +14,10 @@ app.get('/', (req, res) => {
   res.render('home');
 });
 
+app.post('/quotes', (req, res) => {
+  console.log(req.body);
+});
+
 app.listen(app.get('port'), () => {
   console.log('Express started on port ' + app.get('port'));
 });
