@@ -10,16 +10,7 @@ let opts = {
   },
 };
 
-switch (app.get('env')) {
-  case 'development':
-    mongoose.connect(credentials.mongo.development.connectionString, opts);
-    break;
-  case 'production':
-    mongoose.connect(credentials.mongo.production.connectionString, opts);
-    break;
-  default:
-    throw new Error('Unknown enviroment: ' + app.get('env'));
-}
+mongoose.connect('mongodb://user1:kasper1988@ds029496.mlab.com:29496/plottersdb_test', opts);
 
 let app = express();
 let handlebars = require('express-handlebars').create({ defaultLayout: 'main' });
