@@ -1,16 +1,23 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import mongo from 'mongodb';
 import mongoose from 'mongoose';
-import printSession from './models/plotters.js';
 
-let opts = {
-  server: {
-    socketOptions: { keepAlive: 1 },
-  },
-};
+mongoose.Promise = global.Promise;
+mongoose.connect('mongodb://user1:kasper1988@ds029496.mlab.com:29496/plottersdb_test', (err, database) => {
+  if (err) return console.log(err);
+  app.listen(app.get('port'), () => {
+    console.log('Express started on port ' + app.get('port'));
+  });
+});
 
-mongoose.connect('mongodb://user1:kasper1988@ds029496.mlab.com:29496/plottersdb_test', opts);
+let plotterSession = mongoose.model('plotterSession', {
+  id: Number,
+  plotter: Number,
+  start_time: Date,
+  stop_time: Date,
+  passes: Number,
+  meters: Number,
+});
 
 let app = express();
 let handlebars = require('express-handlebars').create({ defaultLayout: 'main' });
@@ -21,13 +28,36 @@ app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
-  res.render('home');
+  plotterSession.find((err, docs) => {
+    if (err) {
+      console.log(err);
+    }
+    res.render('home', { 'plotterSessions': docs });
+  });
+});
+
+app.get('/input', (req, res) => {
+  res.render('input');
 });
 
 app.post('/quotes', (req, res) => {
   console.log(req.body);
-});
+  let session = new plotterSession({
+    id: req.body.id,
+    plotter: req.body.plotter,
+    start_time: req.body.startTime,
+    stop_time: req.body.stopTime,
+    passes: req.body.passes,
+    meters: req.body.meters,
+  });
+  session.save((err) => {
+    if (err) {
+      console.log(err);
+    }
+    else {
+      console.log('plotterSession saved');
+    }
+  });
 
-app.listen(app.get('port'), () => {
-  console.log('Express started on port ' + app.get('port'));
+  res.redirect('/');
 });

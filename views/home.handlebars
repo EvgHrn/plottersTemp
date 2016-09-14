@@ -1,6 +1,12 @@
-<h1>Plotters statistics</h1>
-<form action="/quotes" method="POST">
-  <input type="text" placeholder="name" name="name">
-  <input type="text" placeholder="quote" name="quote">
-  <button type="submit">Submit</button>
-</form>
+<h1>Plotters statistics_home</h1>
+
+{{#each plotterSessions}}
+    <ul>
+        <li>{{id}}</li>
+        <li>{{plotter}}</li>
+        <li>{{start_time}}</li>
+        <li>{{stop_time}}</li>
+        <li>{{passes}}</li>
+        <li>{{meters}}</li>
+    </ul>
+{{/each}}
