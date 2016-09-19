@@ -78,15 +78,19 @@ void setup() {
   // give the Ethernet shield a second to initialize:
   delay(1000);
   Serial.println("connecting...");
-
+  String PostData = "id=666&plotter=3&startTime=2016-09-02T02%3A02&stopTime=2016-09-15T03%3A03&passes=2&meters=2";
   // if you get a connection, report back via serial:
   if (client.connect(server, 3001)) {
     Serial.println("connected");
     // Make an HTTP request:
-    client.println("GET /util/time.php HTTP/1.1");
-    client.println("Host: www.serasidis.gr");
+    client.println("POST /quotes HTTP/1.1");
+    client.println("Host: 5.63.159.247");
+    client.println("User-Agent: Arduino/1.0");
     client.println("Connection: close");
+    client.print("Content-Length: ");
+    client.println(PostData.length());
     client.println();
+    client.println(PostData);
   } 
   else {
     // if you didn't get a connection to the server:
