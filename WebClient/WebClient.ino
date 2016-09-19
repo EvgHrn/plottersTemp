@@ -56,9 +56,9 @@ EthernetClient client;
 void setup() {
  // Open serial communications and wait for port to open:
   Serial.begin(9600);
-   while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
+  // while (!Serial) {
+   // ; // wait for serial port to connect. Needed for Leonardo only
+ // }
 
   // start the Ethernet connection:
 #if defined(WIZ550io_WITH_MACADDRESS)
@@ -78,17 +78,16 @@ void setup() {
   // give the Ethernet shield a second to initialize:
   delay(1000);
   Serial.println("connecting...");
-  String PostData = "id=666&plotter=3&startTime=2016-09-02T02%3A02&stopTime=2016-09-15T03%3A03&passes=2&meters=2";
+  String PostData = "id=667&plotter=4&startTime=35&stopTime=345&passes=45&meters=45";
   // if you get a connection, report back via serial:
   if (client.connect(server, 3001)) {
     Serial.println("connected");
     // Make an HTTP request:
     client.println("POST /quotes HTTP/1.1");
-    client.println("Host: 5.63.159.247");
-    client.println("User-Agent: Arduino/1.0");
-    client.println("Connection: close");
-    client.print("Content-Length: ");
-    client.println(PostData.length());
+    client.println("Host: 5.63.159.247:3001");
+    client.println("Cache-Control: no-cache");
+    client.println("Postman-Token: eab61e60-f3ca-abc0-e506-07a925ed1ebb");
+    client.println("Content-Type: application/x-www-form-urlencoded");
     client.println();
     client.println(PostData);
   } 
