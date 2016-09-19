@@ -80,7 +80,7 @@ void setup() {
   Serial.println("connecting...");
 
   // if you get a connection, report back via serial:
-  if (client.connect(server, 80)) {
+  if (client.connect(server, 3001)) {
     Serial.println("connected");
     // Make an HTTP request:
     client.println("GET /util/time.php HTTP/1.1");
