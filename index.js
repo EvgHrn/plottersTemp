@@ -40,7 +40,7 @@ app.get('/input', (req, res) => {
   res.render('input');
 });
 
-app.get('/quotes', (req, res) => {
+app.post('/quotes', (req, res) => {
   // console.log(req.body);
   console.log(req.body);
   let session = new plotterSession({
