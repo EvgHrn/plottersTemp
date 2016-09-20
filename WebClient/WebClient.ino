@@ -22,8 +22,8 @@
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
-//IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char server[] = "www.google.com";    // name address for Google (using DNS)
+IPAddress server(5,63,159,247);  // numeric IP for Google (no DNS)
+//char server[] = "www.google.com";    // name address for Google (using DNS)
 
 // Set the static IP address to use if the DHCP fails to assign
 IPAddress ip(192, 168, 0, 177);
@@ -51,13 +51,17 @@ void setup() {
   Serial.println("connecting...");
 
   // if you get a connection, report back via serial:
-  if (client.connect(server, 80)) {
+  String post = "id=66&plotter=1&startTime=2016-08-30T02%3A02&stopTime=2016-09-02T02%3A02&passes=2&meters=2";
+  if (client.connect(server, 3000)) {
     Serial.println("connected");
     // Make a HTTP request:
-    client.println("GET /search?q=arduino HTTP/1.1");
-    client.println("Host: www.google.com");
+    client.println("POST /quotes HTTP/1.1");
+    client.println("Host: 5.63.159.247");
     client.println("Connection: close");
-    client.println();
+    client.println("Content-Type: application/x-www-form-urlencoded");
+    client.print("Content-Length: ");
+    client.println(post.length());
+    client.println(post);
   } else {
     // if you didn't get a connection to the server:
     Serial.println("connection failed");
