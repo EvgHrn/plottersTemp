@@ -51,16 +51,19 @@ void setup() {
   Serial.println("connecting...");
 
   // if you get a connection, report back via serial:
-  String post = "id=66&plotter=1&startTime=2016-08-30T02%3A02&stopTime=2016-09-02T02%3A02&passes=2&meters=2";
+  String post = "id=669&plotter=4&startTime=35&stopTime=345&passes=45&meters=45";
+  int content_length = post.length();
   if (client.connect(server, 3000)) {
     Serial.println("connected");
+    Serial.println(content_length);
     // Make a HTTP request:
     client.println("POST /quotes HTTP/1.1");
-    client.println("Host: 5.63.159.247");
-    client.println("Connection: close");
+    client.println("Host: 5.63.159.247:3000");
+    client.println("Cache-Control: no-cache");
     client.println("Content-Type: application/x-www-form-urlencoded");
     client.print("Content-Length: ");
-    client.println(post.length());
+    client.println(content_length);
+    client.println();
     client.println(post);
   } else {
     // if you didn't get a connection to the server:
