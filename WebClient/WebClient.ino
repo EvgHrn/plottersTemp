@@ -1,19 +1,20 @@
 /*
   Web client
 
- This sketch connects to a website (http://www.google.com)
- using an Arduino Wiznet Ethernet shield.
+  This sketch connects to a website (http://www.google.com)
+  using an Arduino Wiznet Ethernet shield.
 
- Circuit:
- * Ethernet shield attached to pins 10, 11, 12, 13
+  Circuit:
+   Ethernet shield attached to pins 10, 11, 12, 13
 
- created 18 Dec 2009
- by David A. Mellis
- modified 9 Apr 2012
- by Tom Igoe, based on work by Adrian McEwen
+  created 18 Dec 2009
+  by David A. Mellis
+  modified 9 Apr 2012
+  by Tom Igoe, based on work by Adrian McEwen
 
- */
-
+*/
+#include <Wire.h>
+#include "RTClib.h"
 #include <SPI.h>
 #include <Ethernet.h>
 
@@ -22,8 +23,7 @@
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
-IPAddress server(5,63,159,247);  // numeric IP for Google (no DNS)
-//char server[] = "www.google.com";    // name address for Google (using DNS)
+IPAddress server(5, 63, 159, 247); // numeric IP for Google (no DNS)
 
 // Set the static IP address to use if the DHCP fails to assign
 IPAddress ip(192, 168, 0, 177);
@@ -33,11 +33,39 @@ IPAddress ip(192, 168, 0, 177);
 // that you want to connect to (port 80 is default for HTTP):
 EthernetClient client;
 
+RTC_DS1307 rtc;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+int mainCounter = 0;
+boolean inTimer = 0;
+
+
 void setup() {
+
+
+
+  
+
+  attachInterrupt(0, hall_worked, RISING);
+
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
+  }
+
+    if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    while (1);
+  }
+
+  if (! rtc.isrunning()) {
+    Serial.println("RTC is NOT running!");
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    // This line sets the RTC with an explicit date & time, for example to set
+    // January 21, 2014 at 3am you would call:
+    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
   }
 
   // start the Ethernet connection:
@@ -49,9 +77,30 @@ void setup() {
   // give the Ethernet shield a second to initialize:
   delay(1000);
   Serial.println("connecting...");
+}
 
-  // if you get a connection, report back via serial:
-  String post = "id=669&plotter=4&startTime=35&stopTime=345&passes=45&meters=45";
+void loop() {
+
+  // if there are incoming bytes available
+  // from the server, read them and print them:
+  if (client.available()) {
+    char c = client.read();
+    Serial.print(c);
+  }
+
+  // if the server's disconnected, stop the client:
+  if (!client.connected()) {
+    Serial.println();
+    Serial.println("disconnecting.");
+    client.stop();
+
+    // do nothing forevermore:
+    //while (true);
+  }
+}
+
+void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _passes, int _meters) {
+  String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
   int content_length = post.length();
   if (client.connect(server, 3000)) {
     Serial.println("connected");
@@ -71,22 +120,10 @@ void setup() {
   }
 }
 
-void loop() {
-  // if there are incoming bytes available
-  // from the server, read them and print them:
-  if (client.available()) {
-    char c = client.read();
-    Serial.print(c);
-  }
-
-  // if the server's disconnected, stop the client:
-  if (!client.connected()) {
-    Serial.println();
-    Serial.println("disconnecting.");
-    client.stop();
-
-    // do nothing forevermore:
-    while (true);
+void hall_worked(){  
+  if (!inTimer) {
+    inTimer = true;
+    DateTime startTime = rtc.now();
   }
 }
 
