@@ -18,6 +18,10 @@
 #include <SPI.h>
 #include <Ethernet.h>
 
+#define maxPassDelay  7000
+#define passesPerMeter 100
+#define hallPin 2
+
 // Enter a MAC address for your controller below.
 // Newer Ethernet shields have a MAC address printed on a sticker on the shield
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -34,19 +38,20 @@ IPAddress ip(192, 168, 0, 177);
 EthernetClient client;
 
 RTC_DS1307 rtc;
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 int mainCounter = 0;
-boolean inTimer = 0;
+boolean inTimer = false;
+int passes = 0;
+float meters = 0;
+int id = 0;
+String startTime = "";
+String stopTime = "";
+int lastHallWorked = 0;
 
 
 void setup() {
 
-
-
-  
-
-  attachInterrupt(0, hall_worked, RISING);
+  pinMode(hallPin, INPUT);
 
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -54,7 +59,7 @@ void setup() {
     ; // wait for serial port to connect. Needed for native USB port only
   }
 
-    if (! rtc.begin()) {
+  if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
     while (1);
   }
@@ -62,7 +67,7 @@ void setup() {
   if (! rtc.isrunning()) {
     Serial.println("RTC is NOT running!");
     // following line sets the RTC to the date & time this sketch was compiled
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     // This line sets the RTC with an explicit date & time, for example to set
     // January 21, 2014 at 3am you would call:
     // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
@@ -81,18 +86,24 @@ void setup() {
 
 void loop() {
 
+  if (digitalRead(hallPin) == LOW) {
+    hall_worked();
+  }
+
+  if (((millis() - lastHallWorked) > maxPassDelay) && (inTimer == true)) {
+    stopPrintSession();
+  }
+
   // if there are incoming bytes available
   // from the server, read them and print them:
   if (client.available()) {
-    char c = client.read();
-    Serial.print(c);
   }
 
   // if the server's disconnected, stop the client:
   if (!client.connected()) {
-    Serial.println();
-    Serial.println("disconnecting.");
-    client.stop();
+    //Serial.println();
+    //Serial.println("disconnecting.");
+    //client.stop();
 
     // do nothing forevermore:
     //while (true);
@@ -103,8 +114,8 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
   String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
   int content_length = post.length();
   if (client.connect(server, 3000)) {
-    Serial.println("connected");
-    Serial.println(content_length);
+    Serial.println("connected to server");
+    Serial.println(post);
     // Make a HTTP request:
     client.println("POST /quotes HTTP/1.1");
     client.println("Host: 5.63.159.247:3000");
@@ -120,10 +131,35 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
   }
 }
 
-void hall_worked(){  
-  if (!inTimer) {
+void hall_worked() {
+  Serial.println("Hall worked");
+  lastHallWorked = millis();
+  if (inTimer == false) {
+    Serial.println("We started print session");
     inTimer = true;
-    DateTime startTime = rtc.now();
+    passes = 0;
+    meters = 0;
+    DateTime now = rtc.now();
+    startTime = String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute());//startTime=2016-09-09T12%3A04&stopTime=2016-10-01T12%3A12
+  } else {
+    // if we are in timer
+    lastHallWorked = millis();
+    passes++;
+    Serial.print("Passes: ");
+    Serial.println(passes);
   }
+  delay(500);
 }
 
+void stopPrintSession() {
+  Serial.println("We are in stopSession procedure");
+  inTimer = false;
+  DateTime now = rtc.now();
+  stopTime = String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute());
+  meters = passes / passesPerMeter;
+  sendDB(id++, 2, startTime, stopTime, passes, meters);
+  passes = 0;
+  meters = 0;
+  startTime = "";
+  stopTime = "";
+}
