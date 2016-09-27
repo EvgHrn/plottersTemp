@@ -28,7 +28,9 @@ app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
-  plotterSession.find({ $lt: req.body.usestopTime , $gt: req.body.usestartTime }, (err, docs) => {
+  console.log(req.body.usestartTime);
+  console.log(req.body.usestopTime );
+  plotterSession.find({ $gt: req.body.usestartTime , $lt: req.body.usestopTime }, (err, docs) => {
     if (err) {
       console.log(err);
     }
