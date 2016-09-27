@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
+import sum from 'sugar/array/sum'
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://user1:kasper1988@ds029496.mlab.com:29496/plottersdb_test', (err, database) => {
@@ -46,6 +47,7 @@ app.post('/results', (req, res) => {
       return docs.meters;
     });
     console.log(docs);
+    let result = sum(docs);
     res.render('results', { 'plotterSessions': docs, 'result': result});
   });
 });
