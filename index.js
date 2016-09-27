@@ -42,6 +42,7 @@ app.post('/results', (req, res) => {
     if (err) {
       console.log(err);
     }
+    console.log(docs);
     res.render('results', { 'plotterSessions': docs});
   });
 });
