@@ -39,19 +39,22 @@ EthernetClient client;
 
 RTC_DS1307 rtc;
 
-int mainCounter = 0;
+unsigned int mainCounter = 0;
 boolean inTimer = false;
-int passes = 0;
-float meters = 0;
-int id = 0;
+unsigned int passes = 0;
+float meters = 0.0;
+unsigned int id = 0;
 String startTime = "";
 String stopTime = "";
-int lastHallWorked = 0;
+unsigned long lastHallWorked = 0;
 
 
 void setup() {
+  
+
 
   pinMode(hallPin, INPUT);
+
 
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -90,7 +93,13 @@ void loop() {
     hall_worked();
   }
 
-  if ( (inTimer == true) && ((millis() - lastHallWorked) > maxPassDelay) ) {
+  if ((inTimer == true) && ((millis() - lastHallWorked) > maxPassDelay) ) {
+    Serial.print("Too long delay: ");
+    Serial.print("millis: ");
+    Serial.print(millis());
+    Serial.print(" ");
+    Serial.print("delta: ");
+    Serial.println(millis() - lastHallWorked);
     stopPrintSession();
   }
 
@@ -109,7 +118,7 @@ void loop() {
   //}
 }
 
-void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _passes, int _meters) {
+void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _passes, float _meters) {
   String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
   int content_length = post.length();
   if (client.connect(server, 3000)) {
@@ -125,6 +134,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
     client.println(content_length);
     client.println();
     client.println(post);
+    client.stop();
   } else {
     // if you didn't get a connection to the server:
     Serial.println("Connection failed");
@@ -134,21 +144,22 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
 void hall_worked() {
   Serial.println("Hall worked");
   lastHallWorked = millis();
+  Serial.print("lastHallWorked: ");
+  Serial.println(lastHallWorked);
   if (inTimer == false) {
     Serial.println("We started print session");
     inTimer = true;
-    passes = 0;
+    passes = 1;
     meters = 0;
     //startTime = String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute());//startTime=2016-09-09T12%3A04&stopTime=2016-10-01T12%3A12
     startTime = getTime();
   } else {
     // if we are in timer
-    lastHallWorked = millis();
     passes++;
     Serial.print("Passes: ");
     Serial.println(passes);
   }
-  delay(500);
+  delay(800);
 }
 
 void stopPrintSession() {
@@ -158,8 +169,6 @@ void stopPrintSession() {
   stopTime = getTime();
   meters = passes / passesPerMeter;
   sendDB(id++, 2, startTime, stopTime, passes, meters);
-  passes = 0;
-  meters = 0;
   startTime = "";
   stopTime = "";
 }
