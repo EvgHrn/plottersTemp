@@ -2,7 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import sum from 'sugar/array/sum';
-import sum from 'sugar/number/floor';
+import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://user1:kasper1988@ds029496.mlab.com:29496/plottersdb_test', (err, database) => {
