@@ -43,7 +43,7 @@ app.post('/results', (req, res) => {
       console.log(err);
     }
     console.log(docs);
-    res.render('results', { 'plotterSessions': docs});
+    res.render('results', { 'plotterSessions': docs, 'result': result});
   });
 });
 
