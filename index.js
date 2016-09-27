@@ -27,19 +27,23 @@ app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
-app.post('/', (req, res) => {
-  console.log(req.body.usestartTime);
-  console.log(req.body.usestopTime );
-  plotterSession.find({ $gt: req.body.usestartTime , $lt: req.body.usestopTime }, (err, docs) => {
-    if (err) {
-      console.log(err);
-    }
-    res.render('home', { 'plotterSessions': docs/*, 'result': result */});
-  });
+app.get('/', (req, res) => {
+    res.render('home');
 });
 
 app.get('/input', (req, res) => {
   res.render('input');
+});
+
+app.post('/results', (req, res) => {
+  console.log(req.body.usestartTime);
+  console.log(req.body.usestopTime);
+  plotterSession.find({ $gt: req.body.usestartTime , $lt: req.body.usestopTime }, (err, docs) => {
+    if (err) {
+      console.log(err);
+    }
+    res.render('results', { 'plotterSessions': docs});
+  });
 });
 
 app.post('/quotes', (req, res) => {
