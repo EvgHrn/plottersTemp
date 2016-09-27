@@ -81,7 +81,7 @@ void setup() {
   }
   // give the Ethernet shield a second to initialize:
   delay(1000);
-  Serial.println("connecting...");
+  Serial.println("Setup section done");
 }
 
 void loop() {
@@ -90,31 +90,31 @@ void loop() {
     hall_worked();
   }
 
-  if (((millis() - lastHallWorked) > maxPassDelay) && (inTimer == true)) {
+  if ( (inTimer == true) && ((millis() - lastHallWorked) > maxPassDelay) ) {
     stopPrintSession();
   }
 
   // if there are incoming bytes available
   // from the server, read them and print them:
-  if (client.available()) {
-  }
+  //if (client.available()) {
+  //}
 
   // if the server's disconnected, stop the client:
-  if (!client.connected()) {
-    //Serial.println();
-    //Serial.println("disconnecting.");
-    //client.stop();
-
-    // do nothing forevermore:
-    //while (true);
-  }
+  //if (!client.connected()) {
+  //Serial.println();
+  //Serial.println("disconnecting.");
+  //client.stop();
+  // do nothing forevermore:
+  //while (true);
+  //}
 }
 
 void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _passes, int _meters) {
   String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
   int content_length = post.length();
   if (client.connect(server, 3000)) {
-    Serial.println("connected to server");
+    Serial.println("We are connected to server");
+    Serial.print("Request: ");
     Serial.println(post);
     // Make a HTTP request:
     client.println("POST /quotes HTTP/1.1");
@@ -127,7 +127,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
     client.println(post);
   } else {
     // if you didn't get a connection to the server:
-    Serial.println("connection failed");
+    Serial.println("Connection failed");
   }
 }
 
@@ -139,8 +139,8 @@ void hall_worked() {
     inTimer = true;
     passes = 0;
     meters = 0;
-    DateTime now = rtc.now();
-    startTime = String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute());//startTime=2016-09-09T12%3A04&stopTime=2016-10-01T12%3A12
+    //startTime = String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute());//startTime=2016-09-09T12%3A04&stopTime=2016-10-01T12%3A12
+    startTime = getTime();
   } else {
     // if we are in timer
     lastHallWorked = millis();
@@ -154,12 +154,17 @@ void hall_worked() {
 void stopPrintSession() {
   Serial.println("We are in stopSession procedure");
   inTimer = false;
-  DateTime now = rtc.now();
-  stopTime = String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute());
+  //stopTime = String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute());
+  stopTime = getTime();
   meters = passes / passesPerMeter;
   sendDB(id++, 2, startTime, stopTime, passes, meters);
   passes = 0;
   meters = 0;
   startTime = "";
   stopTime = "";
+}
+
+String getTime(){
+  DateTime now = rtc.now();
+  return String(String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute()));
 }
