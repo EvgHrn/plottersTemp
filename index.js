@@ -25,14 +25,14 @@ let handlebars = require('express-handlebars').create({ defaultLayout: 'main' })
 app.use(bodyParser.urlencoded({ extended: true }));
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
-app.set('port', process.env.PORT || 3001);
+app.set('port', process.env.PORT || 3000);
 
 app.get('/', (req, res) => {
-  plotterSession.find((err, docs) => {
+  plotterSession.find({ $lt: req.body.usestopTime , $gt: req.body.usestartTime }, (err, docs) => {
     if (err) {
       console.log(err);
     }
-    res.render('home', { 'plotterSessions': docs });
+    res.render('home', { 'plotterSessions': docs/*, 'result': result */});
   });
 });
 

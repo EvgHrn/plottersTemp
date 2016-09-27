@@ -1,5 +1,15 @@
 <h1>Plotters statistics_home</h1>
 
+<div class="formContainer">
+  <form action="/" method="GET">
+    <p>
+      <input type="datetime-local" placeholder="start" name="usestartTime">
+      <input type="datetime-local" placeholder="finish" name="usestopTime">
+    </p>
+    <button type="submit">Submit</button>
+  </form>
+</div>
+
 {{#each plotterSessions}}
     <ul>
         <li>{{id}}</li>
