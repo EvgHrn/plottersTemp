@@ -38,7 +38,7 @@ app.get('/input', (req, res) => {
 app.post('/results', (req, res) => {
   console.log(req.body.usestartTime);
   console.log(req.body.usestopTime);
-  plotterSession.find({"start_Time": { "$gte": req.body.usestartTime , "$lte": req.body.usestopTime }}, (err, docs) => {
+  plotterSession.find({"start_time": { "$gte": req.body.usestartTime , "$lte": req.body.usestopTime }}, (err, docs) => {
     if (err) {
       console.log(err);
     }
