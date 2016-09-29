@@ -53,7 +53,7 @@ app.post('/results', (req, res) => {
     let sum2 = sum(docs.filter((obj) => {
       return (obj.plotter === 2);
     })).toFixed(2);
-    let sumAll = sum1 + sum2;
+    let sumAll = (sum1 + sum2).toFixed(2);
     console.log(sumAll);
     res.render('results', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
   });
