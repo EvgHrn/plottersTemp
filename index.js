@@ -47,15 +47,18 @@ app.post('/results', (req, res) => {
     if (err) {
       console.log(err);
     }
-    var sum1 = sum(docs.filter((obj) => {
+    let sum1 = sum(docs.filter((obj) => {
       return (obj.plotter === 1);
     })).toFixed(2);
-    var sum2 = sum(docs.filter((obj) => {
+    let sum2 = sum(docs.filter((obj) => {
       return (obj.plotter === 2);
     })).toFixed(2);
-    var sumAll = (sum1 + sum2);
+    let sumAll = (parseFloat(sum1) + parseFloat(sum2)).toFixed(2);
+    console.log(typeof parseFloat(sum1));
+    console.log(sum1);
+    console.log(sum2);
     console.log(sumAll);
-    res.render('results', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll.toFixed(2)});
+    res.render('results', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
   });
 
 
