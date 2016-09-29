@@ -47,13 +47,13 @@ app.post('/results', (req, res) => {
     if (err) {
       console.log(err);
     }
-    let sum1 = sum(docs.filter((obj) => {
+    var sum1 = sum(docs.filter((obj) => {
       return (obj.plotter === 1);
     })).toFixed(2);
-    let sum2 = sum(docs.filter((obj) => {
+    var sum2 = sum(docs.filter((obj) => {
       return (obj.plotter === 2);
     })).toFixed(2);
-    let sumAll = (sum1 + sum2);
+    var sumAll = (sum1 + sum2);
     console.log(sumAll);
     res.render('results', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll.toFixed(2)});
   });
