@@ -40,17 +40,26 @@ app.get('/input', (req, res) => {
 app.post('/results', (req, res) => {
   console.log(req.body.usestartTime);
   console.log(req.body.usestopTime);
+
+
+
   plotterSession.find({"start_time": { "$gte": req.body.usestartTime , "$lte": req.body.usestopTime }}, (err, docs) => {
     if (err) {
       console.log(err);
     }
-    docs = docs.map((docs) => {
-      return docs.meters;
-    });
-    console.log(docs);
-    let result = sum(docs).toFixed(2);
-    res.render('results', { 'plotterSessions': docs, 'result': result});
+    let sum1 = sum(docs.filter((obj) => {
+      return (obj.plotter === 1);
+    })).toFixed(2);
+    let sum2 = sum(docs.filter((obj) => {
+      return (obj.plotter === 2);
+    })).toFixed(2);
+    let sumAll = sum1 + sum2;
+    console.log(sumAll);
+    res.render('results', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
   });
+
+
+
 });
 
 app.post('/quotes', (req, res) => {
