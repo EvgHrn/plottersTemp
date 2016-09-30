@@ -24,7 +24,9 @@
 #define passesPerMeter 77
 #define hall1Pin 2
 #define ledPin 3
-#define hall2Pin 4
+#define hall2Pin 5
+#define maxAllowedWrites 10000
+#define memBase 350
 
 // Enter a MAC address for your controller below.
 // Newer Ethernet shields have a MAC address printed on a sticker on the shield
@@ -43,7 +45,6 @@ EthernetClient client;
 
 RTC_DS1307 rtc;
 
-unsigned int mainCounter = 0;
 boolean inTimer1 = false;
 boolean inTimer2 = false;
 unsigned int passes1 = 0;
@@ -57,8 +58,6 @@ String startTime1 = "";
 String stopTime1 = "";
 unsigned long lastHallWorked1 = 0;
 unsigned long lastHallWorked2 = 0;
-const int maxAllowedWrites = 800;
-const int memBase = 350;
 int addressLong;
 
 
@@ -75,12 +74,12 @@ void setup() {
   }
 
   if (! rtc.begin()) {
-    Serial.println("Couldn't find RTC");
+    Serial.println("NoRTC");
     while (1);
   }
 
   if (! rtc.isrunning()) {
-    Serial.println("RTC is NOT running!");
+    Serial.println("RTC stoped");
     // following line sets the RTC to the date & time this sketch was compiled
     //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     // This line sets the RTC with an explicit date & time, for example to set
@@ -90,7 +89,7 @@ void setup() {
 
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
-    Serial.println("Failed to configure Ethernet using DHCP");
+    Serial.println("Eth. failed");
     // try to congifure using IP address instead of DHCP:
     Ethernet.begin(mac, ip);
   }
@@ -104,7 +103,7 @@ void setup() {
   addressLong = EEPROM.getAddress(sizeof(long));
 
   //writeId(0); //just the first time to initialize id
-  Serial.println("Setup section done");
+  Serial.println("Setup done");
 }
 
 void loop() {
@@ -113,27 +112,17 @@ void loop() {
     hall_worked(1);
   }
 
-  //if (digitalRead(hall2Pin) == LOW) {
-   // hall_worked(2);
-  //}
+  if (digitalRead(hall2Pin) == LOW) {
+    hall_worked(2);
+  }
 
   if ((inTimer1 == true) && ((millis() - lastHallWorked1) > maxPassDelay) ) {
-    Serial.print("Too long delay on 1: ");
-    Serial.print("millis: ");
-    Serial.print(millis());
-    Serial.print(" ");
-    Serial.print("delta: ");
-    Serial.println(millis() - lastHallWorked1);
+    Serial.println("Long delay 1");
     stopPrintSession(1);
   }
 
   if ((inTimer2 == true) && ((millis() - lastHallWorked2) > maxPassDelay) ) {
-    Serial.print("Too long delay on 2: ");
-    Serial.print("millis: ");
-    Serial.print(millis());
-    Serial.print(" ");
-    Serial.print("delta: ");
-    Serial.println(millis() - lastHallWorked2);
+    Serial.println("Long delay 2");
     stopPrintSession(2);
   }
 
@@ -153,11 +142,10 @@ void loop() {
 }
 
 void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _passes, float _meters) {
-  String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
-  int content_length = post.length();
+  String post = "id=" + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
   if (client.connect(server, 3000)) {
-    Serial.println("We are connected to server");
-    Serial.print("Request: ");
+    Serial.println("ConnectedToServer");
+    Serial.print("Req: ");
     Serial.println(post);
     // Make a HTTP request:
     client.println("POST /quotes HTTP/1.1");
@@ -165,113 +153,104 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
     client.println("Cache-Control: no-cache");
     client.println("Content-Type: application/x-www-form-urlencoded");
     client.print("Content-Length: ");
-    client.println(content_length);
+    client.println(post.length());
     client.println();
     client.println(post);
     client.stop();
   } else {
     // if you didn't get a connection to the server:
-    Serial.println("Connection failed");
+    Serial.println("SendFailed");
   }
 }
 
 void hall_worked(int pl) {
   digitalWrite(ledPin, HIGH);
   Serial.print("Hall ");
-  Serial.print(pl);
-  Serial.println(" worked");
+  Serial.println(pl);
   switch (pl) {
     case 1: {
-      lastHallWorked1 = millis();
-      Serial.print("lastHallWorked_1: ");
-      Serial.println(lastHallWorked1);
-      if (inTimer1 == false) {    //if we are out of timer
-        Serial.println("We started print session on 1 plotter");
-        inTimer1 = true;
-        passes1 = 1;
-        meters1 = 0;
-        startTime1 = getTime();
-      } else {
-        // if we are in timer
-        passes1++;
-        Serial.print("Passes 1: ");
-        Serial.println(passes1);
+        lastHallWorked1 = millis();
+        if (inTimer1 == false) {    //if we are out of timer
+          Serial.println("Print 1");
+          inTimer1 = true;
+          passes1 = 1;
+          meters1 = 0;
+          startTime1 = getTime();
+        } else {
+          // if we are in timer
+          passes1++;
+          Serial.print("Passes 1: ");
+          Serial.println(passes1);
+        }
       }
-    }
+      break;
     case 2: {
-      lastHallWorked2 = millis();
-      Serial.print("lastHallWorked_2: ");
-      Serial.println(lastHallWorked2);
-      if (inTimer2 == false) {    //if we are out of timer
-        Serial.println("We started print session on 2 plotter");
-        inTimer2 = true;
-        passes2 = 1;
-        meters2 = 0;
-        startTime2 = getTime();
-      } else {
-        // if we are in timer
-        passes2++;
-        Serial.print("Passes 2: ");
-        Serial.println(passes2);
+        lastHallWorked2 = millis();
+        if (inTimer2 == false) {    //if we are out of timer
+          Serial.println("Started print 2");
+          inTimer2 = true;
+          passes2 = 1;
+          meters2 = 0;
+          startTime2 = getTime();
+        } else {
+          // if we are in timer
+          passes2++;
+          Serial.print("Passes 2: ");
+          Serial.println(passes2);
+        }
       }
-    }
+      break;
+    default: {
+        Serial.println("ErrorSwitch");
+      }
+      break;
   }
   delay(500);
   digitalWrite(ledPin, LOW);
 }
 
-void stopPrintSession(int pl) {
-  Serial.print("We are in stopSession ");
-  Serial.print(pl);
-  Serial.println(" procedure");
-  switch (pl){
+void stopPrintSession(int pltoStop) {
+  Serial.print("Stop ");
+  Serial.println(pltoStop);
+  switch (pltoStop) {
     case 1: {
-      inTimer1 = false;
-      stopTime1 = getTime();
-      meters1 = passes1 / float(passesPerMeter);
-      Serial.print("Passes 1: ");
-      Serial.print(passes1);
-      Serial.print(". ");
-      Serial.print("Meters 1: ");
-      Serial.println(meters1);
-      sendDB(id, 1, startTime1, stopTime1, passes1, meters1);
-      startTime1 = "";
-      stopTime1 = "";
-    }
+        inTimer1 = false;
+        stopTime1 = getTime();
+        meters1 = passes1 / float(passesPerMeter);
+        if (passes1 > 1) {
+          sendDB(id, pltoStop, startTime1, stopTime1, passes1, meters1);
+        }
+        startTime1 = "";
+        stopTime1 = "";
+      }
+      break;
     case 2: {
-      inTimer2 = false;
-      stopTime2 = getTime();
-      meters2 = passes2 / float(passesPerMeter);
-      Serial.print("Passes 2: ");
-      Serial.print(passes2);
-      Serial.print(". ");
-      Serial.print("Meters 2: ");
-      Serial.println(meters2);
-      sendDB(id, 2, startTime2, stopTime2, passes2, meters2);
-      startTime2 = "";
-      stopTime2 = "";
-    }
+        inTimer2 = false;
+        stopTime2 = getTime();
+        meters2 = passes2 / float(passesPerMeter);
+        if (passes2 > 1) {
+          sendDB(id, pltoStop, startTime2, stopTime2, passes2, meters2);
+        }
+        startTime2 = "";
+        stopTime2 = "";
+      }
+      break;
   }
   id = readId();
   id++;
   writeId(id);
 }
 
-String getTime(){
+String getTime() {
   DateTime now = rtc.now();
-  return String(String(now.year()) + String("-") + String(now.month()) + String("-") + String(now.day()) + String(" ") + String(now.hour()) + String(":") + String(now.minute()));
+  return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()));
 }
 
-void writeId(unsigned long _id){
+void writeId(unsigned long _id) {
   EEPROM.writeLong(addressLong, _id);
-  Serial.print("Id ");
-  Serial.print(_id);
-  Serial.println(" writed.");
 }
 
-unsigned long readId(){
+unsigned long readId() {
   unsigned long ee_id = EEPROM.readLong(addressLong);
-  Serial.print("Id read: ");
-  Serial.println(ee_id);
   return ee_id;
 }

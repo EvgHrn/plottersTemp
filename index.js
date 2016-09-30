@@ -54,7 +54,7 @@ app.post('/results', (req, res) => {
     sum1 = sum1.toFixed(2);
     let sum2 = sum(docs.filter((obj) => {
       return (obj.plotter === 2);
-    })).toFixed(2);
+    }));
     sum2 = parseFloat(sum2);
     sum2 = sum2.toFixed(2);
     let sumAll = sum1 + sum2;
