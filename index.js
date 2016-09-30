@@ -66,7 +66,8 @@ app.post('/results', (req, res) => {
     sum2f = parseFloat(sum2f);
     sum2f = sum2f.toFixed(2);
     let sumAll = parseFloat(sum2f) + parseFloat(sum1f);
-    console.log(typeof parseFloat(sum1));
+    sumAll =  parseFloat(sumAll);
+    sumAll = sumAll.toFixed(2);
     console.log(sum1f);
     console.log(sum2f);
     console.log(sumAll);
