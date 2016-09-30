@@ -20,8 +20,8 @@
 #include <EEPROMex.h>
 #include "Arduino.h"
 
-#define maxPassDelay  7000
-#define passesPerMeter 77
+#define maxPassDelay  8000
+#define passesPerMeter 80
 #define hall1Pin 2
 #define ledPin 3
 #define hall2Pin 5
@@ -103,6 +103,7 @@ void setup() {
   addressLong = EEPROM.getAddress(sizeof(long));
 
   //writeId(0); //just the first time to initialize id
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   Serial.println("Setup done");
 }
 
@@ -205,7 +206,7 @@ void hall_worked(int pl) {
       }
       break;
   }
-  delay(500);
+  delay(250);
   digitalWrite(ledPin, LOW);
 }
 
