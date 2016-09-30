@@ -47,24 +47,30 @@ app.post('/results', (req, res) => {
     if (err) {
       console.log(err);
     }
-    let sum1 = sum(docs.filter((obj) => {
+    let sum1 = docs.filter((obj) => {
       return (obj.plotter === 1);
-    }));
-    sum1 = parseFloat(sum1);
-    sum1 = sum1.toFixed(2);
-    let sum2 = sum(docs.filter((obj) => {
+    });
+    sum1 = sum1.map((psession) => {
+      return psession.meters;
+    });
+    let sum1f = sum(sum1);
+    sum1f = parseFloat(sum1f);
+    sum1f = sum1f.toFixed(2);
+    let sum2 = docs.filter((obj) => {
       return (obj.plotter === 2);
-    }));
-    sum2 = parseFloat(sum2);
-    sum2 = sum2.toFixed(2);
-    let sumAll = sum1 + sum2;
-    sumAll = parseFloat(sumAll);
-    sumAll = sumAll.toFixed(2);
+    });
+    sum2 = sum2.map((psession) => {
+      return psession.meters;
+    });
+    let sum2f = sum(sum2);
+    sum2f = parseFloat(sum2f);
+    sum2f = sum2f.toFixed(2);
+    let sumAll = parseFloat(sum2f) + parseFloat(sum1f);
     console.log(typeof parseFloat(sum1));
-    console.log(sum1);
-    console.log(sum2);
+    console.log(sum1f);
+    console.log(sum2f);
     console.log(sumAll);
-    res.render('results', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
+    res.render('results', { 'sum1': sum1f, 'sum2': sum2f, 'sumAll': sumAll});
   });
 
 
