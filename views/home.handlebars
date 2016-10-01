@@ -1,11 +1,23 @@
-<h1>Plotters statistics_home</h1>
-
+<h2 style="color: #2e6c80;">Статистика</h2>
 <div class="formContainer">
   <form action="/results" method="POST">
+    От
     <p>
       <input type="datetime-local" placeholder="start" name="usestartTime" value="2016-09-27T00:00:00.000">
+    </p>
+    До
+    <p>
       <input type="datetime-local" placeholder="finish" name="usestopTime" value="2016-09-27T00:00:00.000">
     </p>
     <button type="submit">Submit</button>
   </form>
 </div>
+
+<h3 style="color: #2e6c80;">Погонные метры:</h3>
+<p>
+  <ol>
+    <li>Плоттер 1:  {{sum1}}</li>
+    <li>Плоттер 2:  {{sum2}}</li>
+    <li>Всего:      {{sumAll}}</li>
+  </ol>
+</p>

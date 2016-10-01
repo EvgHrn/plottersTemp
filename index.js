@@ -40,9 +40,6 @@ app.get('/input', (req, res) => {
 app.post('/results', (req, res) => {
   console.log(req.body.usestartTime);
   console.log(req.body.usestopTime);
-
-
-
   plotterSession.find({"start_time": { "$gte": req.body.usestartTime , "$lte": req.body.usestopTime }}, (err, docs) => {
     if (err) {
       console.log(err);
@@ -71,7 +68,7 @@ app.post('/results', (req, res) => {
     console.log(sum1f);
     console.log(sum2f);
     console.log(sumAll);
-    res.render('results', { 'sum1': sum1f, 'sum2': sum2f, 'sumAll': sumAll});
+    res.render('home', { 'sum1': sum1f, 'sum2': sum2f, 'sumAll': sumAll});
   });
 
 
