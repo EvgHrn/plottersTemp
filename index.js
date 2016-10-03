@@ -5,7 +5,7 @@ import sum from 'sugar/array/sum';
 //import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
-let connectionString = 'mongodb://user1:' + process.env.MONGOPASS + '@ds029496.mlab.com:29496/plottersdb_test';
+let connectionString = 'mongodb://user1:' + process.env.MONGOPASS + '@ds035016.mlab.com:35016/plottersdb_test_2';
 mongoose.connect(connectionString, (err, database) => {
   if (err) return console.log(err);
   app.listen(app.get('port'), () => {
@@ -39,17 +39,34 @@ app.get('/input', (req, res) => {
 });
 
 app.post('/results', (req, res) => {
-  console.log(req.body.usestartTime);
-  console.log(req.body.usestopTime);
-  plotterSession.find({"start_time": { "$gte": req.body.usestartTime , "$lte": req.body.usestopTime }}, (err, docs) => {
+  let start = req.body.usestartTime;
+  let stop = req.body.usestopTime;
+  let period = req.body.period;
+  console.log(start);
+  console.log(stop);
+  plotterSession.find({"start_time": { "$gte": start , "$lte": stop }}, (err, docs) => {
     if (err) {
       console.log(err);
     }
-    let period = req.body.period;
+    console.log(docs);
     let sum1 = parseFloat(calcSumMeters(1, docs));
     let sum2 = parseFloat(calcSumMeters(2, docs));
     let sumAll = (sum2 + sum1).toFixed(2);
     res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
+  });
+});
+
+app.post('/onedayresults', (req, res) => {
+  let date = req.body.useDay;
+  console.log(date);
+  plotterSession.find({"start_time": (date)}, (err, docs) => {
+    if (err) {
+      console.log(err);
+    }
+    let sum1 = parseFloat(calcSumMeters(1, docs));
+    let sum2 = parseFloat(calcSumMeters(2, docs));
+    let sumAll = (sum2 + sum1).toFixed(2);
+    res.render('oneDay', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
   });
 });
 
