@@ -2,6 +2,10 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import sum from 'sugar/array/sum';
+import zip from 'sugar/array/zip';
+import unique from 'sugar/array/unique';
+//import format from 'sugar/date/format';
+import moment from 'moment';
 //import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
@@ -46,32 +50,27 @@ app.post('/results', (req, res) => {
   let start = req.body.usestartTime;
   let stop = req.body.usestopTime;
   let period = req.body.period;
-  console.log(start);
-  console.log(stop);
   plotterSession.find({"start_time": { "$gte": start , "$lte": stop }}, (err, docs) => {
     if (err) {
       console.log(err);
     }
-    console.log(docs);
+    //console.log(docs);
     let sum1 = parseFloat(calcSumMeters(1, docs));
     let sum2 = parseFloat(calcSumMeters(2, docs));
     let sumAll = (sum2 + sum1).toFixed(2);
+    let d3dataday = calcDayPeriod(1, docs);
     res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
   });
 });
 
 app.post('/oneday', (req, res) => {
   let date = req.body.useDay;
-  console.log(date);
   let isodatestart = new Date(date + "T00:00:00.000Z");
   let isodatestop = new Date(date + "T23:59:59.000Z");
-  console.log(isodatestart);
-  console.log(isodatestop);
   plotterSession.find( {"start_time": { "$gte": isodatestart, "$lte": isodatestop }}, (err, docs) => {
     if (err) {
       console.log(err);
     }
-    console.log(docs);
     let sum1 = parseFloat(calcSumMeters(1, docs));
     let sum2 = parseFloat(calcSumMeters(2, docs));
     let sumAll = (sum2 + sum1).toFixed(2);
@@ -111,4 +110,33 @@ let calcSumMeters = (plotter, someDocs) => {
   result = parseFloat(result);
   result = result.toFixed(2);
   return result;
-}
+};
+
+
+let calcDayPeriod = (pl, docs) => {
+  let sums = [];                                           //массив сумм каждого дня
+  let docs_filtered = docs.filter((session) => {
+    return (session.plotter === pl);
+  });
+  let startDatesTimes = docs_filtered.map((session) => {
+    return session.start_time;
+  });
+  //console.log(startDatesTimes);
+  let startDates = startDatesTimes.map((dateTime) => {
+    return moment(dateTime).format("YYYY-MM-DD");
+  });
+  let startDates_unique = startDates.filter((item, i, arr) => {
+    return (arr.indexOf(item) === i);
+  });
+  startDates_unique.forEach((date) => {
+    let isodatestart = new Date(date + "T00:00:00.000Z");
+    let isodatestop = new Date(date + "T23:59:59.000Z");
+    let daySessions = docs.filter((session) => {
+      return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
+    });
+    sums.push( parseFloat(calcSumMeters(pl, daySessions)) );
+  });
+  let result = zip(startDates_unique, sums);
+  console.log(result);
+  return result;
+};
