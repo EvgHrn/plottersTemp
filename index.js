@@ -60,8 +60,10 @@ app.post('/results', (req, res) => {
     let sum2 = parseFloat(calcSumMeters(2, docs));
     let sumAll = (sum2 + sum1).toFixed(2);
     //let d3dataday = calcDayPeriod(1, docs);
-    let days = calcDayPeriod_days(1, docs);
-    let meters = calcDayPeriod_meters(1, docs);
+    let days1 = calcDayPeriod_days(1, docs);
+    let meters1 = calcDayPeriod_meters(1, docs);
+    let days2 = calcDayPeriod_days(2, docs);
+    let meters2 = calcDayPeriod_meters(2, docs);
     ////////////////////////////////////////////////////////////////////////////////
     let bar = new quiche('bar');
      bar.setWidth(400);
@@ -72,9 +74,10 @@ app.post('/results', (req, res) => {
      bar.setBarSpacing(6); // 6 pixles between bars/groups
      bar.setLegendBottom(); // Put legend at bottom
      bar.setTransparentBackground(); // Make background transparent
-     bar.addData(meters, 'Метры', '2e6c80');
+     bar.addData(meters1, 'Плоттер 1', '00AB6F');
+     bar.addData(meters2, 'Плоттер 2', 'FF9700');
      bar.setAutoScaling(); // Auto scale y axis
-     bar.addAxisLabels('Дни', days);
+     bar.addAxisLabels('x', days1);
      var imageUrl = bar.getUrl(true); // First param controls http vs. https
      ////////////////////////////////////////////////////////////////////////////////
 
