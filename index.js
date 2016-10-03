@@ -38,6 +38,10 @@ app.get('/input', (req, res) => {
   res.render('input');
 });
 
+app.get('/oneday', (req, res) => {
+    res.render('oneday');
+});
+
 app.post('/results', (req, res) => {
   let start = req.body.usestartTime;
   let stop = req.body.usestopTime;
@@ -56,17 +60,22 @@ app.post('/results', (req, res) => {
   });
 });
 
-app.post('/onedayresults', (req, res) => {
+app.post('/oneday', (req, res) => {
   let date = req.body.useDay;
   console.log(date);
-  plotterSession.find({"start_time": (date)}, (err, docs) => {
+  let isodatestart = new Date(date + "T00:00:00.000Z");
+  let isodatestop = new Date(date + "T23:59:59.000Z");
+  console.log(isodatestart);
+  console.log(isodatestop);
+  plotterSession.find( {"start_time": { "$gte": isodatestart, "$lte": isodatestop }}, (err, docs) => {
     if (err) {
       console.log(err);
     }
+    console.log(docs);
     let sum1 = parseFloat(calcSumMeters(1, docs));
     let sum2 = parseFloat(calcSumMeters(2, docs));
     let sumAll = (sum2 + sum1).toFixed(2);
-    res.render('oneDay', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
+    res.render('oneday', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
   });
 });
 
