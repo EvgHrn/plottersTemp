@@ -5,7 +5,7 @@ import sum from 'sugar/array/sum';
 //import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
-let connectionString = 'mongodb://user1:' + process.env.MONGOPASS + '@ds035016.mlab.com:35016/plottersdb_test_2';
+let connectionString = 'mongodb://user1:' + process.env.MONGOPASS + '@ds029496.mlab.com:29496/plottersdb_test';
 mongoose.connect(connectionString, (err, database) => {
   if (err) return console.log(err);
   app.listen(app.get('port'), () => {
