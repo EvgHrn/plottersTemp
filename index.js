@@ -6,6 +6,7 @@ import zip from 'sugar/array/zip';
 import unique from 'sugar/array/unique';
 //import format from 'sugar/date/format';
 import moment from 'moment';
+import quiche from 'quiche';
 //import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
@@ -58,8 +59,26 @@ app.post('/results', (req, res) => {
     let sum1 = parseFloat(calcSumMeters(1, docs));
     let sum2 = parseFloat(calcSumMeters(2, docs));
     let sumAll = (sum2 + sum1).toFixed(2);
-    let d3dataday = calcDayPeriod(1, docs);
-    res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
+    //let d3dataday = calcDayPeriod(1, docs);
+    let days = calcDayPeriod_days(1, docs);
+    let meters = calcDayPeriod_meters(1, docs);
+    ////////////////////////////////////////////////////////////////////////////////
+    let bar = new quiche('bar');
+     bar.setWidth(400);
+     bar.setHeight(265);
+     bar.setTitle('');
+     bar.setBarStacked(); // Stacked chart
+     bar.setBarWidth(0);
+     bar.setBarSpacing(6); // 6 pixles between bars/groups
+     bar.setLegendBottom(); // Put legend at bottom
+     bar.setTransparentBackground(); // Make background transparent
+     bar.addData(meters, 'Метры', '2e6c80');
+     bar.setAutoScaling(); // Auto scale y axis
+     bar.addAxisLabels('Дни', days);
+     var imageUrl = bar.getUrl(true); // First param controls http vs. https
+     ////////////////////////////////////////////////////////////////////////////////
+
+    res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
   });
 });
 
@@ -139,4 +158,58 @@ let calcDayPeriod = (pl, docs) => {
   let result = zip(startDates_unique, sums);
   console.log(result);
   return result;
+};
+
+let calcDayPeriod_days = (pl, docs) => {
+  let sums = [];                                           //массив сумм каждого дня
+  let docs_filtered = docs.filter((session) => {
+    return (session.plotter === pl);
+  });
+  let startDatesTimes = docs_filtered.map((session) => {
+    return session.start_time;
+  });
+  //console.log(startDatesTimes);
+  let startDates = startDatesTimes.map((dateTime) => {
+    return moment(dateTime).format("YYYY-MM-DD");
+  });
+  let startDates_unique = startDates.filter((item, i, arr) => {
+    return (arr.indexOf(item) === i);
+  });
+  startDates_unique.forEach((date) => {
+    let isodatestart = new Date(date + "T00:00:00.000Z");
+    let isodatestop = new Date(date + "T23:59:59.000Z");
+    let daySessions = docs.filter((session) => {
+      return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
+    });
+    sums.push( parseFloat(calcSumMeters(pl, daySessions)) );
+  });
+  let result = zip(startDates_unique, sums);
+  return startDates_unique;
+};
+
+let calcDayPeriod_meters = (pl, docs) => {
+  let sums = [];                                           //массив сумм каждого дня
+  let docs_filtered = docs.filter((session) => {
+    return (session.plotter === pl);
+  });
+  let startDatesTimes = docs_filtered.map((session) => {
+    return session.start_time;
+  });
+  //console.log(startDatesTimes);
+  let startDates = startDatesTimes.map((dateTime) => {
+    return moment(dateTime).format("YYYY-MM-DD");
+  });
+  let startDates_unique = startDates.filter((item, i, arr) => {
+    return (arr.indexOf(item) === i);
+  });
+  startDates_unique.forEach((date) => {
+    let isodatestart = new Date(date + "T00:00:00.000Z");
+    let isodatestop = new Date(date + "T23:59:59.000Z");
+    let daySessions = docs.filter((session) => {
+      return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
+    });
+    sums.push( parseFloat(calcSumMeters(pl, daySessions)) );
+  });
+  let result = zip(startDates_unique, sums);
+  return sums;
 };
