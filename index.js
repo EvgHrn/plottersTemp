@@ -5,7 +5,8 @@ import sum from 'sugar/array/sum';
 //import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://user1:kasper1988@ds029496.mlab.com:29496/plottersdb_test', (err, database) => {
+let connectionString = 'mongodb://user1:' + process.env.MONGOPASS + '@ds029496.mlab.com:29496/plottersdb_test';
+mongoose.connect(connectionString, (err, database) => {
   if (err) return console.log(err);
   app.listen(app.get('port'), () => {
     console.log('Express started on port ' + app.get('port'));
