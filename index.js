@@ -77,11 +77,15 @@ app.post('/results', (req, res) => {
      bar.addData(meters1, 'Плоттер 1', '00AB6F');
      bar.addData(meters2, 'Плоттер 2', 'FF9700');
      bar.setAutoScaling(); // Auto scale y axis
-     bar.addAxisLabels('x', days1);
+     if (days1.length > days2.length) {
+       bar.addAxisLabels('x', days1);
+     } else {
+       bar.addAxisLabels('x', days2);
+     }
      var imageUrl = bar.getUrl(true); // First param controls http vs. https
 
-     res.render('homeGoogle', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'dataarr': d3dataday});
-    //res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
+     //res.render('homeGoogle', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'dataarr': d3dataday});
+     res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
   });
 });
 
