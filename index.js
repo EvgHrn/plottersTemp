@@ -239,7 +239,6 @@ let calcMonthPeriod = (pl, docs) => {
   startMonths_unique.forEach((date) => {                       //получаем суммы метров по каждому месяцу
     let lastDay;
     let month = moment(date).format("MM");
-    switch ()
     let isodatestart = new Date(date + "-01" + "T00:00:00.000Z");
     let isodatestop = new Date(date + "T23:59:59.000Z");
     let daySessions = docs.filter((session) => {
