@@ -64,7 +64,7 @@ app.post('/results', (req, res) => {
     let meters1 = calcDayPeriod_meters(1, docs);
     let days2 = calcDayPeriod_days(2, docs);
     let meters2 = calcDayPeriod_meters(2, docs);
-    ////////////////////////////////////////////////////////////////////////////////
+
     let bar = new quiche('bar');
      bar.setWidth(400);
      bar.setHeight(265);
@@ -79,9 +79,9 @@ app.post('/results', (req, res) => {
      bar.setAutoScaling(); // Auto scale y axis
      bar.addAxisLabels('x', days1);
      var imageUrl = bar.getUrl(true); // First param controls http vs. https
-     ////////////////////////////////////////////////////////////////////////////////
 
-    res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
+     res.render('homeGoogle', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'dataarr': d3dataday});
+    //res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
   });
 });
 
@@ -215,4 +215,34 @@ let calcDayPeriod_meters = (pl, docs) => {
   });
   let result = zip(startDates_unique, sums);
   return sums;
+};
+
+let calcMonthPeriod = (pl, docs) => {
+  let sums = [];                                           //массив сумм каждого месяца
+  let docs_filtered = docs.filter((session) => {            //фильтр под определённый плоттер
+    return (session.plotter === pl);
+  });
+  let startDatesTimes = docs_filtered.map((session) => {    //получаем массив дат начала печати
+    return session.start_time;
+  });
+  //console.log(startDatesTimes);
+  let startMonths = startDatesTimes.map((dateTime) => {      //вычленяем только годы-месяцы
+    return moment(dateTime).format("YYYY-MM");
+  });
+  let startMonths_unique = startMonths.filter((item, i, arr) => { //избавляемся от дубликатов
+    return (arr.indexOf(item) === i);                               //в итоге у нас есть массив месяцев
+  });
+  startMonths_unique.forEach((date) => {                       //получаем суммы метров по каждому месяцу
+    let lastDay;
+    let month = moment(date).format("MM");
+    switch ()
+    let isodatestart = new Date(date + "-01" + "T00:00:00.000Z");
+    let isodatestop = new Date(date + "T23:59:59.000Z");
+    let daySessions = docs.filter((session) => {
+      return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
+    });
+    sums.push( parseFloat(calcSumMeters(pl, daySessions)) );
+  });
+  let result = zip(startMonths_unique, sums);
+  return result;
 };

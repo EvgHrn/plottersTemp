@@ -166,7 +166,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
 
 void hall_worked(int pl) {
   digitalWrite(ledPin, HIGH);
-  Serial.print("Hall ");
+  Serial.print("Pl ");
   Serial.println(pl);
   switch (pl) {
     case 1: {
@@ -177,6 +177,7 @@ void hall_worked(int pl) {
           passes1 = 1;
           meters1 = 0;
           startTime1 = getTime();
+          Serial.println(startTime1);
         } else {
           // if we are in timer
           passes1++;
@@ -188,11 +189,12 @@ void hall_worked(int pl) {
     case 2: {
         lastHallWorked2 = millis();
         if (inTimer2 == false) {    //if we are out of timer
-          Serial.println("Started print 2");
+          Serial.println("Print 2");
           inTimer2 = true;
           passes2 = 1;
           meters2 = 0;
           startTime2 = getTime();
+          Serial.println(startTime2);
         } else {
           // if we are in timer
           passes2++;
