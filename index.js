@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import sum from 'sugar/array/sum';
 import zip from 'sugar/array/zip';
+import last from 'sugar/array/last';
 import unique from 'sugar/array/unique';
 //import format from 'sugar/date/format';
 import moment from 'moment';
@@ -51,19 +52,21 @@ app.post('/results', (req, res) => {
   let start = req.body.usestartTime;
   let stop = req.body.usestopTime;
   let period = req.body.period;
+  let days = calcDayPeriod_days(start, stop);
+  let meters1;
   plotterSession.find({"start_time": { "$gte": start , "$lte": stop }}, (err, docs) => {
     if (err) {
       console.log(err);
     }
-    //console.log(docs);
+
     let sum1 = parseFloat(calcSumMeters(1, docs));
     let sum2 = parseFloat(calcSumMeters(2, docs));
     let sumAll = (sum2 + sum1).toFixed(2);
+    meters1 = getMeters(1, days, docs);
     //let d3dataday = calcDayPeriod(1, docs);
-    let days1 = calcDayPeriod_days(1, docs);
-    let meters1 = calcDayPeriod_meters(1, docs);
-    let days2 = calcDayPeriod_days(2, docs);
-    let meters2 = calcDayPeriod_meters(2, docs);
+    //let meters1 = calcDayPeriod_meters(1, docs);
+    //let days2 = calcDayPeriod_days(2, docs);
+    //let meters2 = calcDayPeriod_meters(2, docs);
 
     let bar = new quiche('bar');
      bar.setWidth(400);
@@ -77,13 +80,8 @@ app.post('/results', (req, res) => {
      bar.addData(meters1, 'Плоттер 1', '00AB6F');
      bar.addData(meters2, 'Плоттер 2', 'FF9700');
      bar.setAutoScaling(); // Auto scale y axis
-     if (days1.length > days2.length) {
-       bar.addAxisLabels('x', days1);
-     } else {
-       bar.addAxisLabels('x', days2);
-     }
+     bar.addAxisLabels('x', days);
      var imageUrl = bar.getUrl(true); // First param controls http vs. https
-
      //res.render('homeGoogle', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'dataarr': d3dataday});
      res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
   });
@@ -138,7 +136,6 @@ let calcSumMeters = (plotter, someDocs) => {
   return result;
 };
 
-
 let calcDayPeriod = (pl, docs) => {
   let sums = [];                                           //массив сумм каждого дня
   let docs_filtered = docs.filter((session) => {
@@ -167,31 +164,21 @@ let calcDayPeriod = (pl, docs) => {
   return result;
 };
 
-let calcDayPeriod_days = (pl, docs) => {
-  let sums = [];                                           //массив сумм каждого дня
-  let docs_filtered = docs.filter((session) => {
-    return (session.plotter === pl);
-  });
-  let startDatesTimes = docs_filtered.map((session) => {
-    return session.start_time;
-  });
-  //console.log(startDatesTimes);
-  let startDates = startDatesTimes.map((dateTime) => {
-    return moment(dateTime).format("YYYY-MM-DD");
-  });
-  let startDates_unique = startDates.filter((item, i, arr) => {
-    return (arr.indexOf(item) === i);
-  });
-  startDates_unique.forEach((date) => {
-    let isodatestart = new Date(date + "T00:00:00.000Z");
-    let isodatestop = new Date(date + "T23:59:59.000Z");
-    let daySessions = docs.filter((session) => {
-      return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
-    });
-    sums.push( parseFloat(calcSumMeters(pl, daySessions)) );
-  });
-  let result = zip(startDates_unique, sums);
-  return startDates_unique;
+let calcDayPeriod_days = (s, f) => {
+  let startDateTime = moment(s);
+  let stopDateTime = moment(f);
+  let startDate = moment(startDateTime).format("YYYY-MM-DD");
+  let stopDate = moment(stopDateTime).format("YYYY-MM-DD");
+  let days = [];
+  let i = 0;
+  let newdate;
+  do {
+    newdate = moment(startDate).add(i, 'days').format("YYYY-MM-DD");
+    days.push (newdate);
+    i++;
+  } while (days[days.length - 1] !== stopDate)
+  console.log(days);
+  return days;
 };
 
 let calcDayPeriod_meters = (pl, docs) => {

@@ -1,31 +1,36 @@
-<h2 style="color: #2e6c80;">Статистика</h2>
-<div class="formContainer">
-  <form action="/results" method="POST">
-    От
+<link href="style.css" rel="stylesheet">
+<div id="container" style="width:800px">
+  <div id="header">
+    <h2 style="color: #2e6c80;">Статистика</h2>
+  </div>
+  <div id="form">
+    <form action="/results" method="POST">
+      От
+      <p>
+        <input type="datetime-local" placeholder="start" name="usestartTime" value="2016-09-27T00:00:00.000">
+      </p>
+      До
+      <p>
+        <input type="datetime-local" placeholder="finish" name="usestopTime" value="2016-09-27T00:00:00.000">
+      </p>
+      Период
+      <p>
+        <input type="radio" name="period" value="day" checked> день<br>
+        <input type="radio" name="period" value="week"> неделя<br>
+        <input type="radio" name="period" value="month"> месяц
+      </p>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+  <div id="results">
+    <h3 style="color: #2e6c80;">Погонные метры:</h3>
     <p>
-      <input type="datetime-local" placeholder="start" name="usestartTime" value="2016-09-27T00:00:00.000">
+      <ol>
+        <li>Плоттер 1:  {{sum1}}</li>
+        <li>Плоттер 2:  {{sum2}}</li>
+        <li>Всего:      {{sumAll}}</li>
+      </ol>
     </p>
-    До
-    <p>
-      <input type="datetime-local" placeholder="finish" name="usestopTime" value="2016-09-27T00:00:00.000">
-    </p>
-    Период
-    <p>
-      <input type="radio" name="period" value="day" checked> день<br>
-      <input type="radio" name="period" value="week"> неделя<br>
-      <input type="radio" name="period" value="month"> месяц
-    </p>
-    <button type="submit">Submit</button>
-  </form>
+    <Img src="{{chartUrl}}" Width="400" Height="300">
+  </div>
 </div>
-
-<h3 style="color: #2e6c80;">Погонные метры:</h3>
-<p>
-  <ol>
-    <li>Плоттер 1:  {{sum1}}</li>
-    <li>Плоттер 2:  {{sum2}}</li>
-    <li>Всего:      {{sumAll}}</li>
-  </ol>
-</p>
-
-<Img src="{{chartUrl}}" Width="400" Height="300">
