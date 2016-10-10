@@ -66,6 +66,18 @@ app.post('/results', (req, res) => {
     let meters1 = getMeters(1, days, docs);
     let meters2 = getMeters(2, days, docs);
 
+    let maxDatasOnChart = 5;
+    let daysLength = days.length;
+    let chartDatesStep = Math.round(daysLength/maxDatasOnChart);
+    let i = 0;
+    let daysForChart = days;
+    while (i < daysLength) {
+      if ((i % chartDatesStep) !== 0) {
+        daysForChart[i] = '';
+      }
+      i++;
+    }
+    console.log(daysForChart);
     let bar = new quiche('bar');
      bar.setWidth(400);
      bar.setHeight(265);
@@ -78,7 +90,7 @@ app.post('/results', (req, res) => {
      bar.addData(meters1, 'Плоттер 1', '00AB6F');
      bar.addData(meters2, 'Плоттер 2', 'FF9700');
      bar.setAutoScaling(); // Auto scale y axis
-     bar.addAxisLabels('x', days);
+     bar.addAxisLabels('x', daysForChart);
      var imageUrl = bar.getUrl(true); // First param controls http vs. https
      res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
   });
@@ -162,7 +174,7 @@ let calcDayPeriod_days = (s, f) => {
     days.push (newdate);
     i++;
   } while (days[days.length - 1] !== stopDate)
-  console.log(days);
+
   return days;
 };
 
