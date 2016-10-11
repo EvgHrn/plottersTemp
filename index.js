@@ -8,6 +8,8 @@ import unique from 'sugar/array/unique';
 //import format from 'sugar/date/format';
 import moment from 'moment';
 import quiche from 'quiche';
+import session from 'express-session';
+var FileStore = require('session-file-store')(session);
 //import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
@@ -32,26 +34,46 @@ let app = express();
 let handlebars = require('express-handlebars').create({ defaultLayout: 'main' });
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({
+  secret: 'my express secret',
+  saveUninitialized: true,
+  resave: true,
+  store: new FileStore
+}));
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
-app.get('/', (req, res) => {
-    res.render('home');
-});
 
-app.get('/input', (req, res) => {
-  res.render('input');
-});
+app
+app.all('/', (req, res) => {
 
-app.get('/oneday', (req, res) => {
-    res.render('oneday');
-});
+  
 
-app.post('/results', (req, res) => {
-  let start = req.body.usestartTime;
-  let stop = req.body.usestopTime;
-  let period = req.body.period;
+  if (req.body.usestartTime !== undefined){
+    let start = req.body.usestartTime;
+    req.session.start = start;
+    let stop = req.body.usestopTime;
+    req.session.stop = stop;
+    let period = req.body.period;
+    req.session.period = period;
+  } else {
+    if (req.session.start !== undefined){
+      let start = req.session.start;
+      let stop = req.session.stop;
+      let period = req.session.period;
+    } else {
+      let d = moment().format("YYYY-MM-DD");
+      let start = d + "T00:00";
+      let stop = d + "T23:59";
+      let period = 'day';
+      req.session.start = start;
+      req.session.stop = stop;
+      req.session.period = period;
+    }
+  }
+
+  console.log('req.session', req.session);
   let days = calcDayPeriod_days(start, stop);
 
   plotterSession.find({"start_time": { "$gte": start , "$lte": stop }}, (err, docs) => {
@@ -77,7 +99,6 @@ app.post('/results', (req, res) => {
       }
       i++;
     }
-    console.log(daysForChart);
     let bar = new quiche('bar');
      bar.setWidth(400);
      bar.setHeight(265);
@@ -92,9 +113,65 @@ app.post('/results', (req, res) => {
      bar.setAutoScaling(); // Auto scale y axis
      bar.addAxisLabels('x', daysForChart);
      var imageUrl = bar.getUrl(true); // First param controls http vs. https
-     res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
+     res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl, 'startCookie': req.session.start, 'stopCookie': req.session.stop});
   });
 });
+
+app.get('/input', (req, res) => {
+  res.render('input');
+});
+
+app.get('/oneday', (req, res) => {
+    res.render('oneday');
+});
+
+// app.post('/results', (req, res) => {
+//   let start = req.body.usestartTime;
+//   let stop = req.body.usestopTime;
+//   let period = req.body.period;
+//   let days = calcDayPeriod_days(start, stop);
+//
+//   plotterSession.find({"start_time": { "$gte": start , "$lte": stop }}, (err, docs) => {
+//     if (err) {
+//       console.log(err);
+//     }
+//
+//     let sum1 = parseFloat(calcSumMeters(1, docs));
+//     let sum2 = parseFloat(calcSumMeters(2, docs));
+//     let sumAll = (sum2 + sum1).toFixed(2);
+//
+//     let meters1 = getMeters(1, days, docs);
+//     let meters2 = getMeters(2, days, docs);
+//
+//     let maxDatasOnChart = 5;
+//     let daysLength = days.length;
+//     let chartDatesStep = Math.round(daysLength/maxDatasOnChart);
+//     let i = 0;
+//     let daysForChart = days;
+//     while (i < daysLength) {
+//       if ((i % chartDatesStep) !== 0) {
+//         daysForChart[i] = '';
+//       }
+//       i++;
+//     }
+//     console.log(daysForChart);
+//     let bar = new quiche('bar');
+//      bar.setWidth(400);
+//      bar.setHeight(265);
+//      bar.setTitle('');
+//      bar.setBarStacked(); // Stacked chart
+//      bar.setBarWidth(0);
+//      bar.setBarSpacing(6); // 6 pixles between bars/groups
+//      bar.setLegendBottom(); // Put legend at bottom
+//      bar.setTransparentBackground(); // Make background transparent
+//      bar.addData(meters1, 'Плоттер 1', '00AB6F');
+//      bar.addData(meters2, 'Плоттер 2', 'FF9700');
+//      bar.setAutoScaling(); // Auto scale y axis
+//      bar.addAxisLabels('x', daysForChart);
+//      var imageUrl = bar.getUrl(true); // First param controls http vs. https
+//      res.render('home', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll, 'chartUrl': imageUrl});
+//   });
+// });
 
 app.post('/oneday', (req, res) => {
   let date = req.body.useDay;

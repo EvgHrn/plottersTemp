@@ -18,12 +18,15 @@
   "homepage": "https://github.com/EvgHrn/plotters#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
     "express-handlebars": "^3.0.0",
+    "express-session": "^1.14.1",
     "moment": "^2.15.1",
     "mongodb": "^2.2.9",
     "mongoose": "^4.6.0",
     "quiche": "^0.1.0",
+    "session-file-store": "^0.2.2",
     "sugar": "^2.0.1"
   },
   "devDependencies": {

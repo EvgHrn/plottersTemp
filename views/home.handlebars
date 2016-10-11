@@ -4,14 +4,14 @@
     <h2 style="color: #2e6c80;">Статистика</h2>
   </div>
   <div id="form">
-    <form action="/results" method="POST">
+    <form action="/" method="POST">
       От
       <p>
-        <input type="datetime-local" placeholder="start" name="usestartTime" value="2016-09-27T00:00:00.000">
+        <input type="datetime-local" placeholder="start" name="usestartTime" value = {{startCookie}}>
       </p>
       До
       <p>
-        <input type="datetime-local" placeholder="finish" name="usestopTime" value="2016-09-27T00:00:00.000">
+        <input type="datetime-local" placeholder="finish" name="usestopTime" value = {{stopCookie}}>
       </p>
       Период
       <p>
