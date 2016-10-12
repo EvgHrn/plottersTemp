@@ -47,33 +47,34 @@ app.set('port', process.env.PORT || 3000);
 
 app
 app.all('/', (req, res) => {
-
-  
-
+  let start, stop, period;
+  //---------- if there is selected date/time---------------
   if (req.body.usestartTime !== undefined){
-    let start = req.body.usestartTime;
-    req.session.start = start;
-    let stop = req.body.usestopTime;
-    req.session.stop = stop;
-    let period = req.body.period;
-    req.session.period = period;
+    start = req.body.usestartTime;
+    req.session.start = start;                //save new cookie
+    stop = req.body.usestopTime;
+    req.session.stop = stop;                  //save new cookie
+    period = req.body.period;
+    req.session.period = period;              //save new cookie
   } else {
+    //---------- if date/time does not selected ---------------
+    //---------- if there are cookies -------------------------
     if (req.session.start !== undefined){
-      let start = req.session.start;
-      let stop = req.session.stop;
-      let period = req.session.period;
+      start = req.session.start;          //take cookies for variabled
+      stop = req.session.stop;
+      period = req.session.period;
     } else {
+      //---------if there are not cookies----------------------
+      //---------take today for variables----------------------
       let d = moment().format("YYYY-MM-DD");
-      let start = d + "T00:00";
-      let stop = d + "T23:59";
-      let period = 'day';
-      req.session.start = start;
+      start = d + "T00:00";               //start of day
+      stop = d + "T23:59";                //finish of day
+      period = 'day';
+      req.session.start = start;              //set new cookies
       req.session.stop = stop;
       req.session.period = period;
     }
   }
-
-  console.log('req.session', req.session);
   let days = calcDayPeriod_days(start, stop);
 
   plotterSession.find({"start_time": { "$gte": start , "$lte": stop }}, (err, docs) => {
