@@ -93,12 +93,12 @@ void setup() {
   }
 
   if (! rtc.begin()) {
-    Serial.println("NoRTC");
+    Serial.println(F("NoRTC"));
     while (1);
   }
 
   if (! rtc.isrunning()) {
-    Serial.println("RTCerr");
+    Serial.println(F("RTCerr"));
     // following line sets the RTC to the date & time this sketch was compiled
     //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     // This line sets the RTC with an explicit date & time, for example to set
@@ -108,7 +108,7 @@ void setup() {
 
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
-    Serial.println("errEth");
+    Serial.println(F("errEth"));
     // try to congifure using IP address instead of DHCP:
     Ethernet.begin(mac, ip);
   }
@@ -124,12 +124,12 @@ void setup() {
   //writeId(0); //just the first time to initialize id
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   //Serial.println("Setup done");
-interrupts();
+  interrupts();
 
   attachInterrupt(0, intHall1, FALLING) ;
   attachInterrupt(1, intHall2, FALLING) ;
 
-  Serial.println("SetupF");
+  Serial.println(F("SetupF"));
 }
 
 void loop() {
@@ -206,7 +206,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
     client.stop();
   } else {
     // if you didn't get a connection to the server:
-    Serial.println("errSend");
+    Serial.println(F("errSend"));
   }
   interrupts();
 }
@@ -224,7 +224,7 @@ void hall_worked(int pl) {
         } else {
           // if we are in timer
           passes1++;
-          Serial.print("Pss1: ");
+          Serial.print(F("Pss1: "));
           Serial.println(passes1);
         }
       }
@@ -239,7 +239,7 @@ void hall_worked(int pl) {
         } else {
           // if we are in timer
           passes2++;
-          Serial.print("Pss2: ");
+          Serial.print(F("Pss2: "));
           Serial.println(passes2);
         }
       }
@@ -254,7 +254,7 @@ void hall_worked(int pl) {
         } else {
           // if we are in timer
           passes3++;
-          Serial.print("Pss3: ");
+          Serial.print(F("Pss3: "));
           Serial.println(passes3);
         }
       }
@@ -269,7 +269,7 @@ void hall_worked(int pl) {
         } else {
           // if we are in timer
           passes4++;
-          Serial.print("Pss4: ");
+          Serial.print(F("Pss4: "));
           Serial.println(passes4);
         }
       }
@@ -284,7 +284,7 @@ void hall_worked(int pl) {
         } else {
           // if we are in timer
           passes5++;
-          Serial.print("Pss5: ");
+          Serial.print(F("Pss5: "));
           Serial.println(passes5);
         }
       }
