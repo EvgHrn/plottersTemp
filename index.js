@@ -44,8 +44,6 @@ app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
-
-app
 app.all('/', (req, res) => {
   let start, stop, period;
   //---------- if there is selected date/time---------------
