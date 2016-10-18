@@ -126,7 +126,7 @@ void setup() {
   //Serial.println("Setup done");
   interrupts();
 
-  attachInterrupt(0, intHall1, FALLING) ;
+  attachInterrupt(0, intHall3, FALLING) ;
   attachInterrupt(1, intHall2, FALLING) ;
 
   Serial.println(F("SetupF"));
