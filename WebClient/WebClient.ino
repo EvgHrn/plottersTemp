@@ -17,14 +17,14 @@
 #include "RTClib.h"
 #include <SPI.h>
 #include <Ethernet.h>
-#include <EEPROMex.h>
+//#include <EEPROMex.h>
 #include "Arduino.h"
 
 #define maxPassDelay  8000
 #define passesPerMeter 80
 #define ledPin 5
-#define maxAllowedWrites 10000
-#define memBase 350
+//#define maxAllowedWrites 10000
+//#define memBase 350
 
 // Enter a MAC address for your controller below.
 // Newer Ethernet shields have a MAC address printed on a sticker on the shield
@@ -58,7 +58,7 @@ unsigned int passes4 = 0;
 float meters4 = 0.0;
 unsigned int passes5 = 0;
 float meters5 = 0.0;
-unsigned long id;
+unsigned long id = 0;
 String startTime1 = "";
 String stopTime1 = "";
 String startTime2 = "";
@@ -74,7 +74,7 @@ unsigned long lastHallWorked2 = 0;
 unsigned long lastHallWorked3 = 0;
 unsigned long lastHallWorked4 = 0;
 unsigned long lastHallWorked5 = 0;
-int addressLong;
+//int addressLong;
 volatile boolean isHall1 = false;
 volatile boolean isHall2 = false;
 volatile boolean isHall3 = false;
@@ -115,11 +115,11 @@ void setup() {
   // give the Ethernet shield a second to initialize:
   delay(1000);
 
-  EEPROM.setMemPool(memBase, EEPROMSizeUno);
-  EEPROM.setMaxAllowedWrites(maxAllowedWrites);
+  //EEPROM.setMemPool(memBase, EEPROMSizeUno);
+  //EEPROM.setMaxAllowedWrites(maxAllowedWrites);
 
   delay(100);
-  addressLong = EEPROM.getAddress(sizeof(long));
+  //addressLong = EEPROM.getAddress(sizeof(long));
 
   //writeId(0); //just the first time to initialize id
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -313,9 +313,9 @@ void hall_worked(int pl) {
 }
 
 void stopPrintSession(int pltoStop) {
-  id = readId();
+  //id = readId();
   id++;
-  writeId(id);
+  //writeId(id);
   switch (pltoStop) {
     case 1: {
         inTimer1 = false;
@@ -382,14 +382,14 @@ String getTime() {
   return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()));
 }
 
-void writeId(unsigned long _id) {
-  EEPROM.writeLong(addressLong, _id);
-}
+//void writeId(unsigned long _id) {
+//  EEPROM.writeLong(addressLong, _id);
+//}
 
-unsigned long readId() {
-  unsigned long ee_id = EEPROM.readLong(addressLong);
-  return ee_id;
-}
+//unsigned long readId() {
+//  unsigned long ee_id = EEPROM.readLong(addressLong);
+//  return ee_id;
+//}
 
 void intHall1(){
   isHall1 = true;
