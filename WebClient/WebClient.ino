@@ -124,41 +124,47 @@ void setup() {
   //writeId(0); //just the first time to initialize id
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   //Serial.println("Setup done");
-  interrupts();
+  
 
-  attachInterrupt(0, intHall3, FALLING) ;
+  //attachInterrupt(0, intHall1, FALLING) ;
   attachInterrupt(1, intHall2, FALLING) ;
+  attachInterrupt(2, intHall3, FALLING) ;
+  //attachInterrupt(3, intHall4, FALLING) ;
+  attachInterrupt(4, intHall5, FALLING) ;
 
   Serial.println(F("SetupF"));
+  
+  interrupts();
 }
 
 void loop() {
 
   if (isHall1) {
-    digitalWrite(ledPin, HIGH);
+    //digitalWrite(ledPin, HIGH);
     hall_worked(1);
     isHall1 = false;
   }
 
   if (isHall2) {
-    digitalWrite(ledPin, HIGH);
+    //digitalWrite(ledPin, HIGH);
     hall_worked(2);
     isHall2 = false;
   }
   
   if (isHall3) {
-    digitalWrite(ledPin, HIGH);
+    //digitalWrite(ledPin, HIGH);
     hall_worked(3);
     isHall3 = false;
   }
 
   if (isHall4) {
-    digitalWrite(ledPin, HIGH);
+    //digitalWrite(ledPin, HIGH);
     hall_worked(4);
     isHall4 = false;
   }
   
   if (isHall5) {
+    //digitalWrite(ledPin, HIGH);
     hall_worked(5);
     isHall5 = false;
   }
@@ -188,10 +194,10 @@ void loop() {
 }
 
 void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _passes, float _meters) {
-  Serial.println(freeRam());
+  //Serial.println(freeRam());
   noInterrupts();
   String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
-  Serial.println(freeRam());
+  //Serial.println(freeRam());
   if (client.connect(server, 3000)) {
     Serial.println(post);
     // Make a HTTP request:
@@ -212,7 +218,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
 }
 
 void hall_worked(int pl) {
-  Serial.println(freeRam());
+  //Serial.println(freeRam());
   switch (pl) {
     case 1: {
         lastHallWorked1 = millis();
@@ -221,6 +227,8 @@ void hall_worked(int pl) {
           passes1 = 1;
           meters1 = 0;
           startTime1 = getTime();
+          Serial.print(F("Pss1: "));
+          Serial.println(passes1);
         } else {
           // if we are in timer
           passes1++;
@@ -236,6 +244,8 @@ void hall_worked(int pl) {
           passes2 = 1;
           meters2 = 0;
           startTime2 = getTime();
+          Serial.print(F("Pss2: "));
+          Serial.println(passes2);
         } else {
           // if we are in timer
           passes2++;
@@ -251,6 +261,8 @@ void hall_worked(int pl) {
           passes3 = 1;
           meters3 = 0;
           startTime3 = getTime();
+          Serial.print(F("Pss3: "));
+          Serial.println(passes3);
         } else {
           // if we are in timer
           passes3++;
@@ -266,6 +278,8 @@ void hall_worked(int pl) {
           passes4 = 1;
           meters4 = 0;
           startTime4 = getTime();
+          Serial.print(F("Pss4: "));
+          Serial.println(passes4);
         } else {
           // if we are in timer
           passes4++;
@@ -281,6 +295,8 @@ void hall_worked(int pl) {
           passes5 = 1;
           meters5 = 0;
           startTime5 = getTime();
+          Serial.print(F("Pss5: "));
+          Serial.println(passes5);
         } else {
           // if we are in timer
           passes5++;
@@ -293,7 +309,7 @@ void hall_worked(int pl) {
       }
       break;
   }
-  digitalWrite(ledPin, LOW);
+  //digitalWrite(ledPin, LOW);
 }
 
 void stopPrintSession(int pltoStop) {
@@ -358,7 +374,7 @@ void stopPrintSession(int pltoStop) {
       }
       break;
   }
-  Serial.println(freeRam());
+  //Serial.println(freeRam());
 }
 
 String getTime() {
