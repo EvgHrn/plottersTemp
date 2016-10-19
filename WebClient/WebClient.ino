@@ -327,6 +327,8 @@ void stopPrintSession(int pltoStop) {
         
         startTime1 = "";
         stopTime1 = "";
+        meters1 = 0;
+        passes1 = 0;
       }
       break;
     case 2: {
@@ -338,6 +340,8 @@ void stopPrintSession(int pltoStop) {
         }
         startTime2 = "";
         stopTime2 = "";
+        meters2 = 0;
+        passes2 = 0;
       }
       break;
     case 3: {
@@ -349,6 +353,8 @@ void stopPrintSession(int pltoStop) {
       }
       startTime3 = "";
       stopTime3 = "";
+      meters3 = 0;
+      passes3 = 0;
     }
     break;
     case 4: {
@@ -360,6 +366,8 @@ void stopPrintSession(int pltoStop) {
         }
         startTime4 = "";
         stopTime4 = "";
+        meters4 = 0;
+        passes4 = 0;
       }
       break;
       case 5: {
@@ -371,6 +379,8 @@ void stopPrintSession(int pltoStop) {
         }
         startTime5 = "";
         stopTime5 = "";
+        meters5 = 0;
+        passes5 = 0;
       }
       break;
   }
