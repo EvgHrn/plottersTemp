@@ -23,6 +23,8 @@
 #define maxPassDelay  8000
 #define passesPerMeter 80
 #define ledPin 5
+#define int2Pin 3
+#define int3Pin 18
 //#define maxAllowedWrites 10000
 //#define memBase 350
 
@@ -74,7 +76,6 @@ unsigned long lastHallWorked2 = 0;
 unsigned long lastHallWorked3 = 0;
 unsigned long lastHallWorked4 = 0;
 unsigned long lastHallWorked5 = 0;
-//int addressLong;
 volatile boolean isHall1 = false;
 volatile boolean isHall2 = false;
 volatile boolean isHall3 = false;
@@ -85,6 +86,9 @@ volatile boolean isHall5 = false;
 void setup() {
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
+
+  pinMode(int2Pin, INPUT_PULLUP);
+  pinMode(int3Pin, INPUT_PULLUP);
 
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -115,24 +119,12 @@ void setup() {
   // give the Ethernet shield a second to initialize:
   delay(1000);
 
-  //EEPROM.setMemPool(memBase, EEPROMSizeUno);
-  //EEPROM.setMaxAllowedWrites(maxAllowedWrites);
-
-  delay(100);
-  //addressLong = EEPROM.getAddress(sizeof(long));
-
-  //writeId(0); //just the first time to initialize id
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  //Serial.println("Setup done");
   
-
-  //attachInterrupt(0, intHall1, FALLING) ;
-  attachInterrupt(1, intHall2, FALLING) ;
-  attachInterrupt(2, intHall3, FALLING) ;
-  //attachInterrupt(3, intHall4, FALLING) ;
-  attachInterrupt(4, intHall5, FALLING) ;
+  attachInts();
 
   Serial.println(F("SetupF"));
+  delay(1000);
   
   interrupts();
 }
@@ -189,13 +181,11 @@ void loop() {
   if ((inTimer5 == true) && ((millis() - lastHallWorked5) > maxPassDelay) ) {
     stopPrintSession(5);
   }
-
-  
 }
 
 void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _passes, float _meters) {
   //Serial.println(freeRam());
-  noInterrupts();
+  detachInts();
   String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
   //Serial.println(freeRam());
   if (client.connect(server, 3000)) {
@@ -214,11 +204,13 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
     // if you didn't get a connection to the server:
     Serial.println(F("errSend"));
   }
-  interrupts();
+  attachInts();
 }
 
-void hall_worked(int pl) {
+void hall_worked(int pl) { 
   //Serial.println(freeRam());
+  //Serial.print("Worked ");
+  //Serial.println(pl);
   switch (pl) {
     case 1: {
         lastHallWorked1 = millis();
@@ -226,7 +218,9 @@ void hall_worked(int pl) {
           inTimer1 = true;
           passes1 = 1;
           meters1 = 0;
+          detachInts();
           startTime1 = getTime();
+          attachInts();
           Serial.print(F("Pss1: "));
           Serial.println(passes1);
         } else {
@@ -243,7 +237,9 @@ void hall_worked(int pl) {
           inTimer2 = true;
           passes2 = 1;
           meters2 = 0;
+          detachInts();
           startTime2 = getTime();
+          attachInts();
           Serial.print(F("Pss2: "));
           Serial.println(passes2);
         } else {
@@ -252,6 +248,7 @@ void hall_worked(int pl) {
           Serial.print(F("Pss2: "));
           Serial.println(passes2);
         }
+        
       }
       break;
       case 3: {
@@ -260,7 +257,9 @@ void hall_worked(int pl) {
           inTimer3 = true;
           passes3 = 1;
           meters3 = 0;
+          detachInts();
           startTime3 = getTime();
+          attachInts();
           Serial.print(F("Pss3: "));
           Serial.println(passes3);
         } else {
@@ -277,7 +276,9 @@ void hall_worked(int pl) {
           inTimer4 = true;
           passes4 = 1;
           meters4 = 0;
+          detachInts();
           startTime4 = getTime();
+          attachInts();
           Serial.print(F("Pss4: "));
           Serial.println(passes4);
         } else {
@@ -294,7 +295,9 @@ void hall_worked(int pl) {
           inTimer5 = true;
           passes5 = 1;
           meters5 = 0;
+          detachInts();
           startTime5 = getTime();
+          attachInts();
           Serial.print(F("Pss5: "));
           Serial.println(passes5);
         } else {
@@ -309,7 +312,7 @@ void hall_worked(int pl) {
       }
       break;
   }
-  //digitalWrite(ledPin, LOW);
+  digitalWrite(ledPin, LOW);
 }
 
 void stopPrintSession(int pltoStop) {
@@ -319,7 +322,9 @@ void stopPrintSession(int pltoStop) {
   switch (pltoStop) {
     case 1: {
         inTimer1 = false;
+        detachInts(); 
         stopTime1 = getTime();
+        attachInts();
         meters1 = passes1 / float(passesPerMeter);
         if (passes1 > 1) {
           sendDB(id, pltoStop, startTime1, stopTime1, passes1, meters1);
@@ -333,7 +338,9 @@ void stopPrintSession(int pltoStop) {
       break;
     case 2: {
         inTimer2 = false;
+        detachInts(); 
         stopTime2 = getTime();
+        attachInts();
         meters2 = passes2 / float(passesPerMeter);
         if (passes2 > 1) {
           sendDB(id, pltoStop, startTime2, stopTime2, passes2, meters2);
@@ -346,7 +353,9 @@ void stopPrintSession(int pltoStop) {
       break;
     case 3: {
       inTimer3 = false;
-      stopTime3 = getTime();
+      detachInts();
+       stopTime3 = getTime();
+      attachInts();
       meters3 = passes3 / float(passesPerMeter);
       if (passes3 > 1) {
         sendDB(id, pltoStop, startTime3, stopTime3, passes3, meters3);
@@ -359,7 +368,9 @@ void stopPrintSession(int pltoStop) {
     break;
     case 4: {
         inTimer4 = false;
+        detachInts(); 
         stopTime4 = getTime();
+        attachInts();
         meters4 = passes4 / float(passesPerMeter);
         if (passes4 > 1) {
           sendDB(id, pltoStop, startTime4, stopTime4, passes4, meters4);
@@ -372,7 +383,9 @@ void stopPrintSession(int pltoStop) {
       break;
       case 5: {
         inTimer5 = false;
+        detachInts();
         stopTime5 = getTime();
+        attachInts();
         meters5 = passes5 / float(passesPerMeter);
         if (passes5 > 1) {
           sendDB(id, pltoStop, startTime5, stopTime5, passes5, meters5);
@@ -391,15 +404,6 @@ String getTime() {
   DateTime now = rtc.now();
   return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()));
 }
-
-//void writeId(unsigned long _id) {
-//  EEPROM.writeLong(addressLong, _id);
-//}
-
-//unsigned long readId() {
-//  unsigned long ee_id = EEPROM.readLong(addressLong);
-//  return ee_id;
-//}
 
 void intHall1(){
   isHall1 = true;
@@ -425,6 +429,16 @@ int freeRam () {
   extern int __heap_start, *__brkval; 
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+
+void attachInts(){
+  attachInterrupt(digitalPinToInterrupt(int2Pin), intHall2, FALLING);
+  attachInterrupt(digitalPinToInterrupt(int3Pin), intHall3, FALLING);
+}
+
+void detachInts(){
+  detachInterrupt(digitalPinToInterrupt(int2Pin));
+  detachInterrupt(digitalPinToInterrupt(int3Pin));
 }
 
 
