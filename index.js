@@ -93,6 +93,7 @@ app.all('/', (req, res) => {
 
     if (period === 'day') {
       let days = getDays(start, stop);
+      console.log('days ', days);
       meters1 = getMetersDays(1, days, docs);
       meters2 = getMetersDays(2, days, docs);
       meters3 = getMetersDays(3, days, docs);
@@ -114,6 +115,7 @@ app.all('/', (req, res) => {
 
     if (period === 'week') {
       let weeks = getWeeks(start, stop);
+      console.log('weeks ', weeks);
       meters1 = getMetersWeeks(1, weeks, docs);
       meters2 = getMetersWeeks(2, weeks, docs);
       meters3 = getMetersWeeks(3, weeks, docs);
@@ -122,7 +124,9 @@ app.all('/', (req, res) => {
       let weeksLength = weeks.length;
       let chartDatesStep = Math.round(weeksLength/maxDatasOnChart);
       let i = 0;
-      let weeksForChart = weeks;
+      let weeksForChart = weeks.map((week) => {
+         return (moment(week).format('DD MMM YYYY'));
+       });
       while (i < weeksLength) {
         if ((i % chartDatesStep) !== 0) {
           weeksForChart[i] = '';
@@ -145,7 +149,9 @@ app.all('/', (req, res) => {
       let monthsLength = months.length;
       let chartDatesStep = Math.round(monthsLength/maxDatasOnChart);
       let i = 0;
-      let monthsForChart = months;
+      let monthsForChart = months.map((month) => {
+         return (moment(month).format('MMM YYYY'));
+       });
       while (i < monthsLength) {
         if ((i % chartDatesStep) !== 0) {
           monthsForChart[i] = '';
@@ -250,7 +256,7 @@ let getMetersDays = (pl, days, docs) => {
     console.log('start of month', isodatestart);
     console.log('end of month', isodatestop);
     let monthSession = docs_definite_plotter.filter((session) => {
-       return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
+       return ((moment(session.start_time).isAfter(isodatestart)) && (moment(session.start_time) <= isodatestop));
      });
      sums.push( parseFloat( calcSumMeters(pl, monthSession)) );
    });
@@ -266,11 +272,14 @@ let getMetersDays = (pl, days, docs) => {
    weeks.forEach((week) => {
      let isodatestart = moment(week).format();
      let isodatestop = moment(week).endOf('w').format();
+     console.log('start of week', isodatestart);
+     console.log('end of week', isodatestop);
      let weekSession = docs_definite_plotter.filter((session) => {
         return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
       });
       sums.push( parseFloat( calcSumMeters(pl, weekSession)) );
     });
+    console.log('meters in weeks', sums);
     return sums;
    };
 
@@ -303,71 +312,31 @@ let getDays = (s, f) => {
 };
 
 let getMonths = (s, f) => {
-  let startDateTime = moment(s);
-  let stopDateTime = moment(f);
-  let startDate = moment(startDateTime).startOf('month').format();
-  let stopDate = moment(stopDateTime).endOf('month').format();
+  let startDate = moment(s).startOf('month').format();
+  let stopDate = moment(f).endOf('month').format();
   let months = [startDate];
-  let i = 1;
+  let i = 0;
   let newdate;
 
-  while (moment(months[months.length - 1]).isBefore(stopDate)) {
+  while (moment(months[months.length - 1]).endOf('month').isBefore(stopDate)) {
+    i++;
     newdate = moment(startDate).add(i, 'M').format();
     months.push (newdate);
-    i++;
   }
-  // do {
-  //   newdate = moment(startDate).add(i, 'M').format();
-  //   months.push (newdate);
-  //   i++;
-  // } while (moment(months[months.length - 1]).isBefore(stopDate))
-  // //} while (months[months.length - 1] < stopDate)
-
   return months;
 };
 
 let getWeeks = (s, f) => {
-  let startDateTime = moment(s);
   let stopDateTime = moment(f);
-  let startDate = moment(startDateTime).startOf('week').format("YYYY-MM-DD");
-  let stopDate = moment(stopDateTime).endOf('week').format("YYYY-MM-DD");
-  let weeks = [];
+  let startDate = moment(s).startOf('week').format();
+  let stopDate = moment(f).endOf('week').format();
+  let weeks = [startDate];
   let i = 0;
   let newdate;
-  do {
-    newdate = moment(startDate).add(i, 'w').format("YYYY-MM-DD");
-    weeks.push (newdate);
+  while (moment(weeks[weeks.length - 1]).endOf('week').isBefore(stopDate)) {
     i++;
-  } while (weeks[weeks.length - 1] !== stopDate)
-
+    newdate = moment(startDate).add(i, 'w').format();
+    months.push (newdate);
+  }
   return weeks;
 };
-
-// let calcMonthPeriod = (pl, docs) => {
-//   let sums = [];                                           //массив сумм каждого месяца
-//   let docs_filtered = docs.filter((session) => {            //фильтр под определённый плоттер
-//     return (session.plotter === pl);
-//   });
-//   let startDatesTimes = docs_filtered.map((session) => {    //получаем массив дат начала печати
-//     return session.start_time;
-//   });
-//   //console.log(startDatesTimes);
-//   let startMonths = startDatesTimes.map((dateTime) => {      //вычленяем только годы-месяцы
-//     return moment(dateTime).format("YYYY-MM");
-//   });
-//   let startMonths_unique = startMonths.filter((item, i, arr) => { //избавляемся от дубликатов
-//     return (arr.indexOf(item) === i);                               //в итоге у нас есть массив месяцев
-//   });
-//   startMonths_unique.forEach((date) => {                       //получаем суммы метров по каждому месяцу
-//     let lastDay;
-//     let month = moment(date).format("MM");
-//     let isodatestart = new Date(date + "-01" + "T00:00:00.000Z");
-//     let isodatestop = new Date(date + "T23:59:59.000Z");
-//     let daySessions = docs.filter((session) => {
-//       return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
-//     });
-//     sums.push( parseFloat(calcSumMeters(pl, daySessions)) );
-//   });
-//   let result = zip(startMonths_unique, sums);
-//   return result;
-// };
