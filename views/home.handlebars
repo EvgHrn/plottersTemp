@@ -15,9 +15,12 @@
       </p>
       Период
       <p>
-        <input type="radio" name="period" value="day" checked> день<br>
-        <input type="radio" name="period" value="week"> неделя<br>
-        <input type="radio" name="period" value="month"> месяц
+        <input type="radio" id="day" name="period" value="day"> день<br>
+        <input type="radio" id="week" name="period" value="week"> неделя<br>
+        <input type="radio" id="month" name="period" value="month"> месяц
+        <script>
+          document.getElementById("{{element}}").checked = true;
+        </script>
       </p>
       <button type="submit">Submit</button>
     </form>
