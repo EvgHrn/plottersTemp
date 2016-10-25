@@ -253,10 +253,10 @@ let getMetersDays = (pl, days, docs) => {
   months.forEach((month) => {
     let isodatestart = moment(month).startOf('month').format();
     let isodatestop = moment(month).endOf('month').format();
-    console.log('start of month', isodatestart);
-    console.log('end of month', isodatestop);
+    //console.log('start of month', isodatestart);
+    //console.log('end of month', isodatestop);
     let monthSession = docs_definite_plotter.filter((session) => {
-       return ((moment(session.start_time).isAfter(isodatestart)) && (moment(session.start_time) <= isodatestop));
+       return ((moment(session.start_time).isAfter(isodatestart)) && (moment(session.stop_time).isBefore(isodatestop)));
      });
      sums.push( parseFloat( calcSumMeters(pl, monthSession)) );
    });
@@ -272,10 +272,10 @@ let getMetersDays = (pl, days, docs) => {
    weeks.forEach((week) => {
      let isodatestart = moment(week).format();
      let isodatestop = moment(week).endOf('w').format();
-     console.log('start of week', isodatestart);
-     console.log('end of week', isodatestop);
+     //console.log('start of week', isodatestart);
+     //console.log('end of week', isodatestop);
      let weekSession = docs_definite_plotter.filter((session) => {
-        return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
+        return ((moment(session.start_time).isAfter(isodatestart)) && (moment(session.stop_time).isBefore(isodatestop)));
       });
       sums.push( parseFloat( calcSumMeters(pl, weekSession)) );
     });
@@ -314,7 +314,8 @@ let getDays = (s, f) => {
 let getMonths = (s, f) => {
   let startDate = moment(s).startOf('month').format();
   let stopDate = moment(f).endOf('month').format();
-  let months = [startDate];
+  let months = [];
+  months.push (startDate);
   let i = 0;
   let newdate;
 
@@ -327,16 +328,16 @@ let getMonths = (s, f) => {
 };
 
 let getWeeks = (s, f) => {
-  let stopDateTime = moment(f);
   let startDate = moment(s).startOf('week').format();
   let stopDate = moment(f).endOf('week').format();
-  let weeks = [startDate];
+  let weeks = [];
+  weeks.push(startDate);
   let i = 0;
   let newdate;
   while (moment(weeks[weeks.length - 1]).endOf('week').isBefore(stopDate)) {
     i++;
     newdate = moment(startDate).add(i, 'w').format();
-    months.push (newdate);
+    weeks.push(newdate);
   }
   return weeks;
 };
