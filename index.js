@@ -69,9 +69,9 @@ app.all('/', (req, res) => {
     } else {
       //---------if there are not cookies----------------------
       //---------take today for variables----------------------
-      let d = moment().format("YYYY-MM-DD");
-      start = d + "T00:00";               //start of day
-      stop = d + "T23:59";                //finish of day
+      //let d = moment().format();
+      start = moment().startOf('week').format("YYYY-MM-DDTHH:mm");               //start of week
+      stop = moment().endOf('week').format("YYYY-MM-DDTHH:mm");               //finish of week
       period = 'day';
       req.session.start = start;              //set new cookies
       req.session.stop = stop;
@@ -100,7 +100,10 @@ app.all('/', (req, res) => {
       meters4 = getMetersDays(4, days, docs);
       meters5 = getMetersDays(5, days, docs);
       let daysLength = days.length;
-      let chartDatesStep = Math.round(daysLength/maxDatasOnChart);
+      let chartDatesStep = Math.ceil(daysLength/maxDatasOnChart);
+
+      console.log('chartDatesStep', chartDatesStep);
+
       let i = 0;
       let daysForChart = days;
       while (i < daysLength) {
@@ -109,6 +112,7 @@ app.all('/', (req, res) => {
         }
         i++;
       }
+      console.log('daysForChart', daysForChart);
       periodForChart = daysForChart;
       elementForCheck = "day";
     }
