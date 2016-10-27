@@ -70,8 +70,8 @@ app.all('/', (req, res) => {
       //---------if there are not cookies----------------------
       //---------take today for variables----------------------
       //let d = moment().format();
-      start = moment().startOf('week').format("YYYY-MM-DDTHH:mm");               //start of week
-      stop = moment().endOf('week').format("YYYY-MM-DDTHH:mm");               //finish of week
+      start = moment().startOf('isoWeek').format("YYYY-MM-DDTHH:mm");               //start of week
+      stop = moment().endOf('isoWeek').format("YYYY-MM-DDTHH:mm");               //finish of week
       period = 'day';
       req.session.start = start;              //set new cookies
       req.session.stop = stop;
@@ -191,25 +191,6 @@ app.get('/input', (req, res) => {
   res.render('input');
 });
 
-app.get('/oneday', (req, res) => {
-    res.render('oneday');
-});
-
-app.post('/oneday', (req, res) => {
-  let date = req.body.useDay;
-  let isodatestart = new Date(date + "T00:00:00.000Z");
-  let isodatestop = new Date(date + "T23:59:59.000Z");
-  plotterSession.find( {"start_time": { "$gte": isodatestart, "$lte": isodatestop }}, (err, docs) => {
-    if (err) {
-      console.log(err);
-    }
-    let sum1 = parseFloat(calcSumMeters(1, docs));
-    let sum2 = parseFloat(calcSumMeters(2, docs));
-    let sumAll = (sum2 + sum1).toFixed(2);
-    res.render('oneday', { 'sum1': sum1, 'sum2': sum2, 'sumAll': sumAll});
-  });
-});
-
 app.post('/quotes', (req, res) => {
   // console.log(req.body);
   console.log(req.body);
@@ -242,7 +223,7 @@ let getMetersDays = (pl, days, docs) => {
    let isodatestart = new Date(day + "T00:00:00.000Z");
    let isodatestop = new Date(day + "T23:59:59.000Z");
    let daySession = docs_definite_plotter.filter((session) => {
-      return ((session.start_time >= isodatestart) && (session.start_time <= isodatestop));
+      return ((session.start_time >= isodatestart) && (session.stop_time <= isodatestop));
     });
     sums.push( parseFloat( calcSumMeters(pl, daySession)) );
   });
@@ -257,8 +238,6 @@ let getMetersDays = (pl, days, docs) => {
   months.forEach((month) => {
     let isodatestart = moment(month).startOf('month').format();
     let isodatestop = moment(month).endOf('month').format();
-    //console.log('start of month', isodatestart);
-    //console.log('end of month', isodatestop);
     let monthSession = docs_definite_plotter.filter((session) => {
        return ((moment(session.start_time).isAfter(isodatestart)) && (moment(session.stop_time).isBefore(isodatestop)));
      });
@@ -274,10 +253,8 @@ let getMetersDays = (pl, days, docs) => {
       return (session.plotter === pl);
     });
    weeks.forEach((week) => {
-     let isodatestart = moment(week).format();
-     let isodatestop = moment(week).endOf('w').format();
-     //console.log('start of week', isodatestart);
-     //console.log('end of week', isodatestop);
+     let isodatestart = moment(week).startOf('isoWeek').format();
+     let isodatestop = moment(week).endOf('isoWeek').format();
      let weekSession = docs_definite_plotter.filter((session) => {
         return ((moment(session.start_time).isAfter(isodatestart)) && (moment(session.stop_time).isBefore(isodatestop)));
       });
@@ -332,13 +309,13 @@ let getMonths = (s, f) => {
 };
 
 let getWeeks = (s, f) => {
-  let startDate = moment(s).startOf('week').format();
-  let stopDate = moment(f).endOf('week').format();
+  let startDate = moment(s).startOf('isoWeek').format();
+  let stopDate = moment(f).endOf('isoWeek').format();
   let weeks = [];
   weeks.push(startDate);
   let i = 0;
   let newdate;
-  while (moment(weeks[weeks.length - 1]).endOf('week').isBefore(stopDate)) {
+  while (moment(weeks[weeks.length - 1]).endOf('isoWeek').isBefore(stopDate)) {
     i++;
     newdate = moment(startDate).add(i, 'w').format();
     weeks.push(newdate);
