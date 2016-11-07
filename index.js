@@ -9,7 +9,18 @@ import unique from 'sugar/array/unique';
 import moment from 'moment';
 import quiche from 'quiche';
 import session from 'express-session';
+import multer from 'multer';
+
 var FileStore = require('session-file-store')(session);
+
+var mult_storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads/')
+  },
+  filename: function (req, file, cb) {
+      cb(null, file.originalname);
+  }
+});
 //import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
@@ -211,6 +222,15 @@ app.post('/quotes', (req, res) => {
     }
   });
 
+  res.redirect('/');
+});
+
+app.get('/upload', (req, res) => {
+    res.render('upload');
+});
+
+app.post('/upl', multer({storage: mult_storage,  dest: './uploads/'}).single('upl'), (req, res) => {
+  console.log(req.file);
   res.redirect('/');
 });
 
