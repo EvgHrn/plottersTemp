@@ -10,6 +10,7 @@ import moment from 'moment';
 import quiche from 'quiche';
 import session from 'express-session';
 import multer from 'multer';
+import excel from 'exceljs';
 
 var FileStore = require('session-file-store')(session);
 
@@ -21,7 +22,6 @@ var mult_storage = multer.diskStorage({
       cb(null, file.originalname);
   }
 });
-//import floor from 'sugar/number/floor';
 
 mongoose.Promise = global.Promise;
 let connectionString = 'mongodb://user1:' + process.env.MONGOPASS + '@ds029496.mlab.com:29496/plottersdb_test';
@@ -225,13 +225,42 @@ app.post('/quotes', (req, res) => {
   res.redirect('/');
 });
 
-app.get('/upload', (req, res) => {
-    res.render('upload');
+app.get('/compare', (req, res) => {
+    res.render('compare');
 });
 
-app.post('/upl', multer({storage: mult_storage,  dest: './uploads/'}).single('upl'), (req, res) => {
+app.post('/upload', multer({storage: mult_storage,  dest: './uploads/'}).single('upl'), (req, res) => {
   console.log(req.file);
-  res.redirect('/');
+  let arrForCompare = {};
+  let todayEnd = moment().endOf('day').format();
+  let startDay = moment(todayEnd).subtract(7, 'days');
+  let days = getDays(startDay, todayEnd);
+  let metersPlotters = [];
+  let report = new Map();
+  var workbook = new excel.Workbook();
+  workbook.xlsx.readFile('./uploads/book.xlsx').then(function() {
+    var worksheet = workbook.getWorksheet('Sheet1');
+    worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+      //console.log("Row " + rowNumber + " = " + JSON.stringify(row.values));
+      //console.log(row.getCell(1).value);
+      let date = JSON.stringify(row.getCell(1).value);
+      let data = JSON.stringify(row.getCell(2).value);
+      //console.log(date);
+      //console.log(data);
+      report.set(date, data);
+    });
+  });
+  console.log(report.size);
+
+  plotterSession.find({"start_time": { "$gte": startDay , "$lte": todayEnd }}, (err, docs) => {
+    if (err) {
+      console.log(err);
+    }
+    metersPlotters = getMetersDays(1, days, docs) + getMetersDays(2, days, docs) +getMetersDays(3, days, docs) +getMetersDays(4, days, docs) +getMetersDays(5, days, docs);
+
+  });
+
+  res.render('compare', {data: arrForCompare});
 });
 
 let getMetersDays = (pl, days, docs) => {
