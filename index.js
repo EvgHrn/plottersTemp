@@ -10,7 +10,6 @@ import moment from 'moment';
 import quiche from 'quiche';
 import session from 'express-session';
 import multer from 'multer';
-import excel from 'exceljs';
 import xlsx from 'xlsx';
 
 var FileStore = require('session-file-store')(session);
@@ -347,6 +346,8 @@ let getWeeks = (s, f) => {
 };
 
 let getReport = () => {
-  let workbook = XLSX.readFile('./uploads/book.xlsx');
-  
+  let workbook = xlsx.readFile('./uploads/book.xlsx');
+  let sheet_name_list = workbook.SheetNames;
+  let report = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+  return report;
 };
