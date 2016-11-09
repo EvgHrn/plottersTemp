@@ -11,6 +11,7 @@ import quiche from 'quiche';
 import session from 'express-session';
 import multer from 'multer';
 import excel from 'exceljs';
+import xlsx from 'xlsx';
 
 var FileStore = require('session-file-store')(session);
 
@@ -226,41 +227,14 @@ app.post('/quotes', (req, res) => {
 });
 
 app.get('/compare', (req, res) => {
-    res.render('compare');
+  let report = getReport();
+  console.log(report);
+  res.render('compare');
 });
 
 app.post('/upload', multer({storage: mult_storage,  dest: './uploads/'}).single('upl'), (req, res) => {
   console.log(req.file);
-  let arrForCompare = {};
-  let todayEnd = moment().endOf('day').format();
-  let startDay = moment(todayEnd).subtract(7, 'days');
-  let days = getDays(startDay, todayEnd);
-  let metersPlotters = [];
-  let report = new Map();
-  var workbook = new excel.Workbook();
-  workbook.xlsx.readFile('./uploads/book.xlsx').then(function() {
-    var worksheet = workbook.getWorksheet('Sheet1');
-    worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
-      //console.log("Row " + rowNumber + " = " + JSON.stringify(row.values));
-      //console.log(row.getCell(1).value);
-      let date = JSON.stringify(row.getCell(1).value);
-      let data = JSON.stringify(row.getCell(2).value);
-      //console.log(date);
-      //console.log(data);
-      report.set(date, data);
-    });
-  });
-  console.log(report.size);
-
-  plotterSession.find({"start_time": { "$gte": startDay , "$lte": todayEnd }}, (err, docs) => {
-    if (err) {
-      console.log(err);
-    }
-    metersPlotters = getMetersDays(1, days, docs) + getMetersDays(2, days, docs) +getMetersDays(3, days, docs) +getMetersDays(4, days, docs) +getMetersDays(5, days, docs);
-
-  });
-
-  res.render('compare', {data: arrForCompare});
+  res.redirect('/compare');
 });
 
 let getMetersDays = (pl, days, docs) => {
@@ -370,4 +344,9 @@ let getWeeks = (s, f) => {
     weeks.push(newdate);
   }
   return weeks;
+};
+
+let getReport = () => {
+  let workbook = XLSX.readFile('./uploads/book.xlsx');
+  
 };
