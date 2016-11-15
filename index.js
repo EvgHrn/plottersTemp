@@ -1,11 +1,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+//import path from 'path';
 import mongoose from 'mongoose';
 import sum from 'sugar/array/sum';
 import zip from 'sugar/array/zip';
 import last from 'sugar/array/last';
 import unique from 'sugar/array/unique';
-//import format from 'sugar/date/format';
 import moment from 'moment';
 import quiche from 'quiche';
 import session from 'express-session';
@@ -44,6 +44,7 @@ let plotterSession = mongoose.model('plotterSession', {
 let app = express();
 let handlebars = require('express-handlebars').create({ defaultLayout: 'main' });
 
+app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
   secret: 'my express secret',
@@ -104,7 +105,7 @@ app.all('/', (req, res) => {
 
     if (period === 'day') {
       let days = getDays(start, stop);
-      console.log('days ', days);
+      //console.log('days ', days);
       meters1 = getMetersDays(1, days, docs);
       meters2 = getMetersDays(2, days, docs);
       meters3 = getMetersDays(3, days, docs);
@@ -113,7 +114,7 @@ app.all('/', (req, res) => {
       let daysLength = days.length;
       let chartDatesStep = Math.ceil(daysLength/maxDatasOnChart);
 
-      console.log('chartDatesStep', chartDatesStep);
+      //console.log('chartDatesStep', chartDatesStep);
 
       let i = 0;
       let daysForChart = days;
@@ -123,14 +124,14 @@ app.all('/', (req, res) => {
         }
         i++;
       }
-      console.log('daysForChart', daysForChart);
+      //console.log('daysForChart', daysForChart);
       periodForChart = daysForChart;
       elementForCheck = "day";
     }
 
     if (period === 'week') {
       let weeks = getWeeks(start, stop);
-      console.log('weeks ', weeks);
+      //console.log('weeks ', weeks);
       meters1 = getMetersWeeks(1, weeks, docs);
       meters2 = getMetersWeeks(2, weeks, docs);
       meters3 = getMetersWeeks(3, weeks, docs);
@@ -154,7 +155,7 @@ app.all('/', (req, res) => {
 
     if (period === 'month') {
       let months = getMonths(start, stop);
-      console.log('months', months);
+      //console.log('months', months);
       meters1 = getMetersMonths(1, months, docs);
       meters2 = getMetersMonths(2, months, docs);
       meters3 = getMetersMonths(3, months, docs);
@@ -225,10 +226,30 @@ app.post('/quotes', (req, res) => {
   res.redirect('/');
 });
 
-app.get('/compare', (req, res) => {
-  let report = getReport();
-  console.log(report);
-  res.render('compare');
+app.get('/compare', async (req, res) => {
+  let reports = getReport();
+  //68SBP826.BSSconsole.log('old reports', reports);
+  let dates = reports.map((jsonItem) => {
+    return moment(jsonItem.Дата, "DD-MM-YY").format();
+  });
+  //console.log('dates', dates);
+  let mini = moment(dates[0]).startOf('day').format();
+  let maxi = moment(dates[dates.length - 1]).endOf('day').format();
+  //console.log('start', mini);
+  //console.log('stop', maxi);
+  plotterSession.find({"start_time": { "$gte": mini , "$lte": maxi }}, function (err, docs){
+    reports = reports.map((jsonItem) => {
+      let metersSensor = parseFloat(getMetersDays(1, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs))
+                        + parseFloat(getMetersDays(2, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs))
+                        + parseFloat(getMetersDays(3, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs))
+                        + parseFloat(getMetersDays(4, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs))
+                        + parseFloat(getMetersDays(5, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs));
+      metersSensor = metersSensor.toFixed(2);
+      return {'Дата': jsonItem.Дата, 'Метры': jsonItem.Метры, 'МетрыДатчик': metersSensor, 'Разница': (parseFloat(metersSensor) - parseFloat(jsonItem.Метры)).toFixed(2)};
+    });
+    //console.log('new reports', reports);
+    res.render('compare', {'report': reports});
+  });
 });
 
 app.post('/upload', multer({storage: mult_storage,  dest: './uploads/'}).single('upl'), (req, res) => {
@@ -350,4 +371,18 @@ let getReport = () => {
   let sheet_name_list = workbook.SheetNames;
   let report = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
   return report;
+};
+
+function getMetersFromTo (start, stop){
+  //console.log ('In getMetersFromTo');
+  let meters;
+  plotterSession.find({"start_time": { "$gte": start , "$lte": stop }}, function (err, docs){
+    let metersArr = docs.map((doc) => {
+      return doc.meters;
+    });
+    meters = parseFloat(sum(metersArr));
+    meters = meters.toFixed(2);
+    console.log('meters', meters);
+  });
+  return meters;
 };

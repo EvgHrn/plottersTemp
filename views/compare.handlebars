@@ -1,12 +1,35 @@
-<div id="fileUploadForm">
-  <form action="/upload" enctype="multipart/form-data" method="post">
-    <p><input type="file" name="upl">
-      <input type="submit" value="Отправить">
-    </p>
-  </form>
-</div>
-
-
 <div id="compare">
 
+  <div id="header">
+    <h2 style="color: #2e6c80;">Контроль</h2>
+  </div>
+
+  <link href="./styleCompare.css" rel="stylesheet" type="text/css"/>
+  <div id="fileUploadForm">
+    <form action="/upload" enctype="multipart/form-data" method="post">
+      <p><input type="file" name="upl">
+        <input type="submit" value="Отправить">
+      </p>
+    </form>
+  </div>
+
+
+  <div id="compareTable">
+    <table>
+      <tr id="tableHeader">
+        <th>Дата</th>
+        <th>Метры Отчёт</th>
+        <th>Метры Датчик</th>
+        <th>Разница</th>
+      </tr>
+    {{#each report}}
+      <tr>
+        <td>{{this.Дата}}</td>
+        <td>{{this.Метры}}</td>
+        <td>{{this.МетрыДатчик}}</td>
+        <td>{{this.Разница}}</td>
+      </tr>
+    {{/each}}
+    </table>
+  </div>
 </div>

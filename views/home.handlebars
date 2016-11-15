@@ -1,42 +1,46 @@
-
+<link href="./style.css" rel="stylesheet" type="text/css"/>
 <div id="container">
   <div id="header">
     <h2 style="color: #2e6c80;">Статистика</h2>
   </div>
-  <div id="form">
-    <form action="/" method="POST">
-      От
-      <p>
-        <input type="datetime-local" placeholder="start" name="usestartTime" value = {{startCookie}}>
-      </p>
-      До
-      <p>
-        <input type="datetime-local" placeholder="finish" name="usestopTime" value = {{stopCookie}}>
-      </p>
-      Период
-      <p>
-        <input type="radio" id="day" name="period" value="day"> день<br>
-        <input type="radio" id="week" name="period" value="week"> неделя<br>
-        <input type="radio" id="month" name="period" value="month"> месяц
-        <script>
-          document.getElementById("{{element}}").checked = true;
-        </script>
-      </p>
-      <button type="submit">Submit</button>
-    </form>
-  </div>
-  <div id="results">
-    <h3 style="color: #2e6c80;">Погонные метры:</h3>
-    <p>
-      <ol>
-        <li>Плоттер 1:  {{sum1}}</li>
-        <li>Плоттер 2:  {{sum2}}</li>
-        <li>Плоттер 3:  {{sum3}}</li>
-        <li>Плоттер 4:  {{sum4}}</li>
-        <li>Плоттер 5:  {{sum5}}</li>
-        <li>Всего:      {{sumAll}}</li>
-      </ol>
-    </p>
+    <div id="formResults">
+      <div id="form">
+        <form action="/" method="POST">
+          От
+          <p>
+            <input type="datetime-local" placeholder="start" name="usestartTime" value = {{startCookie}}>
+          </p>
+          До
+          <p>
+            <input type="datetime-local" placeholder="finish" name="usestopTime" value = {{stopCookie}}>
+          </p>
+          Период
+          <p>
+            <input type="radio" id="day" name="period" value="day"> день<br>
+            <input type="radio" id="week" name="period" value="week"> неделя<br>
+            <input type="radio" id="month" name="period" value="month"> месяц
+            <script>
+              document.getElementById("{{element}}").checked = true;
+            </script>
+          </p>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+      <div id="results">
+        <h3 style="color: #2e6c80;">Погонные метры:</h3>
+        <p>
+          <ol>
+            <li>Плоттер 1:  {{sum1}}</li>
+            <li>Плоттер 2:  {{sum2}}</li>
+            <li>Плоттер 3:  {{sum3}}</li>
+            <li>Плоттер 4:  {{sum4}}</li>
+            <li>Плоттер 5:  {{sum5}}</li>
+            <li>Всего:      {{sumAll}}</li>
+          </ol>
+        </p>
+      </div>
+    </div>
+  <div id="chart">
     <Img src="{{chartUrl}}" Width="400" Height="300">
   </div>
 </div>
