@@ -11,6 +11,7 @@ import quiche from 'quiche';
 import session from 'express-session';
 import multer from 'multer';
 import xlsx from 'xlsx';
+import "babel-polyfill";
 
 var FileStore = require('session-file-store')(session);
 
