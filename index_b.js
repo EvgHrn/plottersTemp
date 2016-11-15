@@ -1,52 +1,5 @@
 'use strict';
 
-var _regenerator = require('babel-runtime/regenerator');
-
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var getMetersFromTo = function () {
-  var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(start, stop) {
-    return _regenerator2.default.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            console.log('In getMetersFromTo');
-            _context.t0 = plotterSession;
-            _context.t1 = { "start_time": { "$gte": start, "$lte": stop } };
-            _context.next = 5;
-            return function (err, docs) {
-              console.log('In find');
-              var metersArr = docs.map(function (doc) {
-                return doc.meters;
-              });
-              var meters = parseFloat((0, _sum2.default)(metersArr));
-              meters = meters.toFixed(2);
-              console.log('meters', meters);
-              return meters;
-            };
-
-          case 5:
-            _context.t2 = _context.sent;
-            _context.next = 8;
-            return _context.t0.find.call(_context.t0, _context.t1, _context.t2);
-
-          case 8:
-          case 'end':
-            return _context.stop();
-        }
-      }
-    }, _callee, this);
-  }));
-
-  return function getMetersFromTo(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
 var _express = require('express');
 
 var _express2 = _interopRequireDefault(_express);
@@ -97,6 +50,10 @@ var _xlsx2 = _interopRequireDefault(_xlsx);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+//import path from 'path';
+
+
 var FileStore = require('session-file-store')(_expressSession2.default);
 
 var mult_storage = _multer2.default.diskStorage({
@@ -129,6 +86,7 @@ var plotterSession = _mongoose2.default.model('plotterSession', {
 var app = (0, _express2.default)();
 var handlebars = require('express-handlebars').create({ defaultLayout: 'main' });
 
+app.use(_express2.default.static('public'));
 app.use(_bodyParser2.default.urlencoded({ extended: true }));
 app.use((0, _expressSession2.default)({
   secret: 'my express secret',
@@ -194,7 +152,7 @@ app.all('/', function (req, res) {
 
     if (period === 'day') {
       var days = getDays(start, stop);
-      console.log('days ', days);
+      //console.log('days ', days);
       meters1 = getMetersDays(1, days, docs);
       meters2 = getMetersDays(2, days, docs);
       meters3 = getMetersDays(3, days, docs);
@@ -203,7 +161,7 @@ app.all('/', function (req, res) {
       var daysLength = days.length;
       var chartDatesStep = Math.ceil(daysLength / maxDatasOnChart);
 
-      console.log('chartDatesStep', chartDatesStep);
+      //console.log('chartDatesStep', chartDatesStep);
 
       var i = 0;
       var daysForChart = days;
@@ -213,14 +171,14 @@ app.all('/', function (req, res) {
         }
         i++;
       }
-      console.log('daysForChart', daysForChart);
+      //console.log('daysForChart', daysForChart);
       periodForChart = daysForChart;
       elementForCheck = "day";
     }
 
     if (period === 'week') {
       var weeks = getWeeks(start, stop);
-      console.log('weeks ', weeks);
+      //console.log('weeks ', weeks);
       meters1 = getMetersWeeks(1, weeks, docs);
       meters2 = getMetersWeeks(2, weeks, docs);
       meters3 = getMetersWeeks(3, weeks, docs);
@@ -244,7 +202,7 @@ app.all('/', function (req, res) {
 
     if (period === 'month') {
       var months = getMonths(start, stop);
-      console.log('months', months);
+      //console.log('months', months);
       meters1 = getMetersMonths(1, months, docs);
       meters2 = getMetersMonths(2, months, docs);
       meters3 = getMetersMonths(3, months, docs);
@@ -314,25 +272,48 @@ app.post('/quotes', function (req, res) {
   res.redirect('/');
 });
 
-app.get('/compare', function (req, res) {
+app.get('/compare', function () {
+  var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(req, res) {
+    var reports, dates, mini, maxi;
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            reports = getReport();
+            //68SBP826.BSSconsole.log('old reports', reports);
 
-  var report = getReport();
-  console.log('report', report);
+            dates = reports.map(function (jsonItem) {
+              return (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format();
+            });
+            //console.log('dates', dates);
 
-  // let reportFull = report.map(async function(jsonItem) {
-  //   console.log('In map');
-  //   let start = moment(jsonItem.Дата, "DD-MM-YY").startOf('day').format("YYYY-MM-DDTHH:mm");
-  //   let stop = moment(jsonItem.Дата, "DD-MM-YY").endOf('day').format("YYYY-MM-DDTHH:mm");
-  //   let metersSensor = await getMetersFromTo(start, stop);
-  //   await metersSensor;
-  //   console.log('metersSensor', metersSensor);
-  //   return {'Дата': jsonItem.Дата, 'Метры': jsonItem.Метры, 'Метры_Датчик': metersSensor, 'Разница': (metersSensor - jsonItem.Метры)};
-  // });
-  //
-  // console.log('Out of map');
-  //
-  // res.render('compare', {'report': reportFull});
-});
+            mini = (0, _moment2.default)(dates[0]).startOf('day').format();
+            maxi = (0, _moment2.default)(dates[dates.length - 1]).endOf('day').format();
+            //console.log('start', mini);
+            //console.log('stop', maxi);
+
+            plotterSession.find({ "start_time": { "$gte": mini, "$lte": maxi } }, function (err, docs) {
+              reports = reports.map(function (jsonItem) {
+                var metersSensor = parseFloat(getMetersDays(1, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs)) + parseFloat(getMetersDays(2, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs)) + parseFloat(getMetersDays(3, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs)) + parseFloat(getMetersDays(4, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs)) + parseFloat(getMetersDays(5, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs));
+                metersSensor = metersSensor.toFixed(2);
+                return { 'Дата': jsonItem.Дата, 'Метры': jsonItem.Метры, 'МетрыДатчик': metersSensor, 'Разница': (parseFloat(metersSensor) - parseFloat(jsonItem.Метры)).toFixed(2) };
+              });
+              //console.log('new reports', reports);
+              res.render('compare', { 'report': reports });
+            });
+
+          case 5:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, _callee, undefined);
+  }));
+
+  return function (_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}());
 
 app.post('/upload', (0, _multer2.default)({ storage: mult_storage, dest: './uploads/' }).single('upl'), function (req, res) {
   console.log(req.file);
@@ -455,4 +436,16 @@ var getReport = function getReport() {
   return report;
 };
 
-;
+function getMetersFromTo(start, stop) {
+  //console.log ('In getMetersFromTo');
+  var meters = void 0;
+  plotterSession.find({ "start_time": { "$gte": start, "$lte": stop } }, function (err, docs) {
+    var metersArr = docs.map(function (doc) {
+      return doc.meters;
+    });
+    meters = parseFloat((0, _sum2.default)(metersArr));
+    meters = meters.toFixed(2);
+    console.log('meters', meters);
+  });
+  return meters;
+};
