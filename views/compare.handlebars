@@ -1,3 +1,5 @@
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+
 <div id="compare">
 
   <div id="header">
@@ -27,9 +29,20 @@
         <td>{{this.Дата}}</td>
         <td>{{this.Метры}}</td>
         <td>{{this.МетрыДатчик}}</td>
-        <td>{{this.Разница}}</td>
+        <td class="difference">{{this.Разница}}</td>
       </tr>
     {{/each}}
     </table>
   </div>
 </div>
+
+<footer id="footer">
+  <a href="http://localhost:3000/">Статистика</a>
+</footer>
+
+<script>
+  $('td.difference').each(function(){
+      var x = $(this).text();
+      if ((x < -5) || (x > 5)) $(this).css({color: 'red'});
+  });
+</script>
