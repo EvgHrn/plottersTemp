@@ -227,7 +227,7 @@ app.post('/quotes', (req, res) => {
   res.redirect('/');
 });
 
-app.get('/compare', async (req, res) => {
+app.get('/compare', (req, res) => {
   let reports = getReport();
   //68SBP826.BSSconsole.log('old reports', reports);
   let dates = reports.map((jsonItem) => {
