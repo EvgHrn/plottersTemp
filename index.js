@@ -228,14 +228,25 @@ app.post('/quotes', (req, res) => {
 });
 
 app.get('/compare', (req, res) => {
+  let error = '';
   let reports = getReport();
   console.log('reports\n', reports);
   let dates = reports.map((obj) => {
-    return moment(obj['Дата'], "DD-MM-YY").format();
+    let date = moment(obj['Дата'], "DD-MM-YY").format();
+    if (!moment(date).isValid()) {
+      error = "ОШИБКА: неверная дата";
+      date = moment().format();
+    }
+    return date;
   });
 
   let datesMeters = reports.map((obj) => {
-    return {'Дата': moment(obj['Дата'], "DD-MM-YY").format(), 'Длина': obj['Длина']};
+    let date = moment(obj['Дата'], "DD-MM-YY").format();
+    if (!moment(date).isValid()) {
+      error = "ОШИБКА: неверная дата";
+      date = moment().format();
+    }
+    return {'Дата': moment(date).format(), 'Длина': obj['Длина']};
   });
   console.log('datesMeters\n', datesMeters);
   let datesMetersUnique = datesMeters.reduce((arrResult, obj) => {
@@ -274,7 +285,7 @@ app.get('/compare', (req, res) => {
     });
     //console.log('new reports', reports);
     console.log('toShow\n', toShow);
-    res.render('compare', {'report': toShow});
+    res.render('compare', {'report': toShow, 'error': error});
   });
 });
 
@@ -285,6 +296,7 @@ app.post('/upload', multer({storage: mult_storage,  dest: './uploads/'}).single(
 
 let getMetersDays = (pl, days, docs) => {
   let sums = [];
+  //console.log('docs\n', docs);
   let docs_definite_plotter = docs.filter((session) => {
     return (session.plotter === pl);
   });
@@ -403,7 +415,7 @@ let getReportFromXls = (plotter) => {
   let sheet_name_list = workbook.SheetNames;
   let report = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
   //delete report[0];
-  //console.log(report);
+  console.log(report);
   return report;
 };
 

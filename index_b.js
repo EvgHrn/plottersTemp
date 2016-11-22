@@ -272,14 +272,25 @@ app.post('/quotes', function (req, res) {
 });
 
 app.get('/compare', function (req, res) {
+  var error = '';
   var reports = getReport();
   console.log('reports\n', reports);
   var dates = reports.map(function (obj) {
-    return (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format();
+    var date = (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format();
+    if (!(0, _moment2.default)(date).isValid()) {
+      error = "ОШИБКА: неверная дата";
+      date = (0, _moment2.default)().format();
+    }
+    return date;
   });
 
   var datesMeters = reports.map(function (obj) {
-    return { 'Дата': (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format(), 'Длина': obj['Длина'] };
+    var date = (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format();
+    if (!(0, _moment2.default)(date).isValid()) {
+      error = "ОШИБКА: неверная дата";
+      date = (0, _moment2.default)().format();
+    }
+    return { 'Дата': (0, _moment2.default)(date).format(), 'Длина': obj['Длина'] };
   });
   console.log('datesMeters\n', datesMeters);
   var datesMetersUnique = datesMeters.reduce(function (arrResult, obj) {
@@ -314,7 +325,7 @@ app.get('/compare', function (req, res) {
     });
     //console.log('new reports', reports);
     console.log('toShow\n', toShow);
-    res.render('compare', { 'report': toShow });
+    res.render('compare', { 'report': toShow, 'error': error });
   });
 });
 
@@ -325,6 +336,7 @@ app.post('/upload', (0, _multer2.default)({ storage: mult_storage, dest: './uplo
 
 var getMetersDays = function getMetersDays(pl, days, docs) {
   var sums = [];
+  //console.log('docs\n', docs);
   var docs_definite_plotter = docs.filter(function (session) {
     return session.plotter === pl;
   });
@@ -443,7 +455,7 @@ var getReportFromXls = function getReportFromXls(plotter) {
   var sheet_name_list = workbook.SheetNames;
   var report = _xlsx2.default.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
   //delete report[0];
-  //console.log(report);
+  console.log(report);
   return report;
 };
 
