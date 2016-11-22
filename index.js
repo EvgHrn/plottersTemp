@@ -11,7 +11,7 @@ import quiche from 'quiche';
 import session from 'express-session';
 import multer from 'multer';
 import xlsx from 'xlsx';
-import "babel-polyfill";
+//import "babel-polyfill";
 
 var FileStore = require('session-file-store')(session);
 
@@ -229,27 +229,52 @@ app.post('/quotes', (req, res) => {
 
 app.get('/compare', (req, res) => {
   let reports = getReport();
-  //68SBP826.BSSconsole.log('old reports', reports);
-  let dates = reports.map((jsonItem) => {
-    return moment(jsonItem.Дата, "DD-MM-YY").format();
+  console.log('reports\n', reports);
+  let dates = reports.map((obj) => {
+    return moment(obj['Дата'], "DD-MM-YY").format();
   });
-  //console.log('dates', dates);
+
+  let datesMeters = reports.map((obj) => {
+    return {'Дата': moment(obj['Дата'], "DD-MM-YY").format(), 'Длина': obj['Длина']};
+  });
+  console.log('datesMeters\n', datesMeters);
+  let datesMetersUnique = datesMeters.reduce((arrResult, obj) => {
+    arrResult[obj['Дата']] = (arrResult[obj['Дата']] || 0) + parseFloat(obj['Длина']);
+    return arrResult;
+  }, []);
+  let datesMetersUnique_new = [];
+  for (var key in datesMetersUnique) {
+    datesMetersUnique_new.push({'Дата': key, 'МетрыОтчёт': datesMetersUnique[key]});
+  }
+
+  //console.log('datesMeters\n', datesMeters);
+  //console.log('datesMetersUnique\n', datesMetersUnique);
+  //console.log('datesMetersUnique_new\n', datesMetersUnique_new);
+  //console.log('dates\n', dates);
+  dates.sort((a, b) => {
+    if (moment(a).isBefore(moment(b))) return -1;
+    if (moment(a).isAfter(moment(b))) return 1;
+  });
+  //console.log('dates sorted\n', dates);
   let mini = moment(dates[0]).startOf('day').format();
   let maxi = moment(dates[dates.length - 1]).endOf('day').format();
-  //console.log('start', mini);
-  //console.log('stop', maxi);
+  console.log('start', mini);
+  console.log('stop', maxi);
+  let toShow = [];
   plotterSession.find({"start_time": { "$gte": mini , "$lte": maxi }}, function (err, docs){
-    reports = reports.map((jsonItem) => {
-      let metersSensor = parseFloat(getMetersDays(1, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs))
-                        + parseFloat(getMetersDays(2, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs))
-                        + parseFloat(getMetersDays(3, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs))
-                        + parseFloat(getMetersDays(4, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs))
-                        + parseFloat(getMetersDays(5, getDays(moment(jsonItem.Дата, "DD-MM-YY").format(), moment(jsonItem.Дата, "DD-MM-YY").format()), docs));
+    toShow = datesMetersUnique_new.map((jsonItem) => {
+    let metersSensor = parseFloat(getMetersDays(1, getDays(moment(jsonItem.Дата).format(), moment(jsonItem.Дата).format()), docs))
+                      + parseFloat(getMetersDays(2, getDays(moment(jsonItem.Дата).format(), moment(jsonItem.Дата).format()), docs))
+                      + parseFloat(getMetersDays(3, getDays(moment(jsonItem.Дата).format(), moment(jsonItem.Дата).format()), docs))
+                      + parseFloat(getMetersDays(4, getDays(moment(jsonItem.Дата).format(), moment(jsonItem.Дата).format()), docs))
+                      + parseFloat(getMetersDays(5, getDays(moment(jsonItem.Дата).format(), moment(jsonItem.Дата).format()), docs));
       metersSensor = metersSensor.toFixed(2);
-      return {'Дата': jsonItem.Дата, 'Метры': jsonItem.Метры, 'МетрыДатчик': metersSensor, 'Разница': (parseFloat(metersSensor) - parseFloat(jsonItem.Метры)).toFixed(2)};
+      console.log('metersSensor\n',metersSensor);
+      return {'Дата': moment(jsonItem.Дата).format("DD.MM.YY"), 'МетрыОтчёт': (parseFloat(jsonItem.МетрыОтчёт)).toFixed(2), 'МетрыДатчик': metersSensor, 'Разница': (parseFloat(metersSensor) - parseFloat(jsonItem.МетрыОтчёт)).toFixed(2)};
     });
     //console.log('new reports', reports);
-    res.render('compare', {'report': reports});
+    console.log('toShow\n', toShow);
+    res.render('compare', {'report': toShow});
   });
 });
 
@@ -367,12 +392,32 @@ let getWeeks = (s, f) => {
   return weeks;
 };
 
-let getReport = () => {
-  let workbook = xlsx.readFile('./uploads/book.xlsx');
+let getReportFromXls = (plotter) => {
+  if ((plotter < 1) || (plotter > 5)) {
+    errorHandler('Plotter number out of range');
+    return 'error';
+  }
+  let xlsPath = './uploads/plotter' + plotter + '.xls';
+  //console.log('xlsPath', xlsPath);
+  let workbook = xlsx.readFile(xlsPath);
   let sheet_name_list = workbook.SheetNames;
   let report = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+  //delete report[0];
+  //console.log(report);
   return report;
 };
+
+let getReport = () => {
+  let report1 = getReportFromXls(1);
+  let report2 = getReportFromXls(2);
+  let report3 = getReportFromXls(3);
+  let report4 = getReportFromXls(4);
+  let report5 = getReportFromXls(5);
+  //console.log(report1.concat(report2, report3, report4, report5));
+  return report1.concat(report2, report3, report4, report5);
+};
+
+
 
 function getMetersFromTo (start, stop){
   //console.log ('In getMetersFromTo');
@@ -386,4 +431,8 @@ function getMetersFromTo (start, stop){
     console.log('meters', meters);
   });
   return meters;
+};
+
+let errorHandler = (message) => {
+
 };

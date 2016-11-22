@@ -7,6 +7,7 @@
   </div>
 
   <link href="./styleCompare.css" rel="stylesheet" type="text/css"/>
+
   <div id="fileUploadForm">
     <form action="/upload" enctype="multipart/form-data" method="post">
       <p><input type="file" name="upl">
@@ -27,7 +28,7 @@
     {{#each report}}
       <tr>
         <td>{{this.Дата}}</td>
-        <td>{{this.Метры}}</td>
+        <td>{{this.МетрыОтчёт}}</td>
         <td>{{this.МетрыДатчик}}</td>
         <td class="difference">{{this.Разница}}</td>
       </tr>
