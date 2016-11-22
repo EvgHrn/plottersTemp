@@ -48,14 +48,11 @@ var _xlsx = require('xlsx');
 
 var _xlsx2 = _interopRequireDefault(_xlsx);
 
-require('babel-polyfill');
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+//import "babel-polyfill";
+
 //import path from 'path';
-
-
 var FileStore = require('session-file-store')(_expressSession2.default);
 
 var mult_storage = _multer2.default.diskStorage({
@@ -274,48 +271,52 @@ app.post('/quotes', function (req, res) {
   res.redirect('/');
 });
 
-app.get('/compare', function () {
-  var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(req, res) {
-    var reports, dates, mini, maxi;
-    return regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            reports = getReport();
-            //68SBP826.BSSconsole.log('old reports', reports);
+app.get('/compare', function (req, res) {
+  var reports = getReport();
+  console.log('reports\n', reports);
+  var dates = reports.map(function (obj) {
+    return (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format();
+  });
 
-            dates = reports.map(function (jsonItem) {
-              return (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format();
-            });
-            //console.log('dates', dates);
+  var datesMeters = reports.map(function (obj) {
+    return { 'Дата': (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format(), 'Длина': obj['Длина'] };
+  });
+  console.log('datesMeters\n', datesMeters);
+  var datesMetersUnique = datesMeters.reduce(function (arrResult, obj) {
+    arrResult[obj['Дата']] = (arrResult[obj['Дата']] || 0) + parseFloat(obj['Длина']);
+    return arrResult;
+  }, []);
+  var datesMetersUnique_new = [];
+  for (var key in datesMetersUnique) {
+    datesMetersUnique_new.push({ 'Дата': key, 'МетрыОтчёт': datesMetersUnique[key] });
+  }
 
-            mini = (0, _moment2.default)(dates[0]).startOf('day').format();
-            maxi = (0, _moment2.default)(dates[dates.length - 1]).endOf('day').format();
-            //console.log('start', mini);
-            //console.log('stop', maxi);
-
-            plotterSession.find({ "start_time": { "$gte": mini, "$lte": maxi } }, function (err, docs) {
-              reports = reports.map(function (jsonItem) {
-                var metersSensor = parseFloat(getMetersDays(1, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs)) + parseFloat(getMetersDays(2, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs)) + parseFloat(getMetersDays(3, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs)) + parseFloat(getMetersDays(4, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs)) + parseFloat(getMetersDays(5, getDays((0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format(), (0, _moment2.default)(jsonItem.Дата, "DD-MM-YY").format()), docs));
-                metersSensor = metersSensor.toFixed(2);
-                return { 'Дата': jsonItem.Дата, 'Метры': jsonItem.Метры, 'МетрыДатчик': metersSensor, 'Разница': (parseFloat(metersSensor) - parseFloat(jsonItem.Метры)).toFixed(2) };
-              });
-              //console.log('new reports', reports);
-              res.render('compare', { 'report': reports });
-            });
-
-          case 5:
-          case 'end':
-            return _context.stop();
-        }
-      }
-    }, _callee, undefined);
-  }));
-
-  return function (_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}());
+  //console.log('datesMeters\n', datesMeters);
+  //console.log('datesMetersUnique\n', datesMetersUnique);
+  //console.log('datesMetersUnique_new\n', datesMetersUnique_new);
+  //console.log('dates\n', dates);
+  dates.sort(function (a, b) {
+    if ((0, _moment2.default)(a).isBefore((0, _moment2.default)(b))) return -1;
+    if ((0, _moment2.default)(a).isAfter((0, _moment2.default)(b))) return 1;
+  });
+  //console.log('dates sorted\n', dates);
+  var mini = (0, _moment2.default)(dates[0]).startOf('day').format();
+  var maxi = (0, _moment2.default)(dates[dates.length - 1]).endOf('day').format();
+  console.log('start', mini);
+  console.log('stop', maxi);
+  var toShow = [];
+  plotterSession.find({ "start_time": { "$gte": mini, "$lte": maxi } }, function (err, docs) {
+    toShow = datesMetersUnique_new.map(function (jsonItem) {
+      var metersSensor = parseFloat(getMetersDays(1, getDays((0, _moment2.default)(jsonItem.Дата).format(), (0, _moment2.default)(jsonItem.Дата).format()), docs)) + parseFloat(getMetersDays(2, getDays((0, _moment2.default)(jsonItem.Дата).format(), (0, _moment2.default)(jsonItem.Дата).format()), docs)) + parseFloat(getMetersDays(3, getDays((0, _moment2.default)(jsonItem.Дата).format(), (0, _moment2.default)(jsonItem.Дата).format()), docs)) + parseFloat(getMetersDays(4, getDays((0, _moment2.default)(jsonItem.Дата).format(), (0, _moment2.default)(jsonItem.Дата).format()), docs)) + parseFloat(getMetersDays(5, getDays((0, _moment2.default)(jsonItem.Дата).format(), (0, _moment2.default)(jsonItem.Дата).format()), docs));
+      metersSensor = metersSensor.toFixed(2);
+      console.log('metersSensor\n', metersSensor);
+      return { 'Дата': (0, _moment2.default)(jsonItem.Дата).format("DD.MM.YY"), 'МетрыОтчёт': parseFloat(jsonItem.МетрыОтчёт).toFixed(2), 'МетрыДатчик': metersSensor, 'Разница': (parseFloat(metersSensor) - parseFloat(jsonItem.МетрыОтчёт)).toFixed(2) };
+    });
+    //console.log('new reports', reports);
+    console.log('toShow\n', toShow);
+    res.render('compare', { 'report': toShow });
+  });
+});
 
 app.post('/upload', (0, _multer2.default)({ storage: mult_storage, dest: './uploads/' }).single('upl'), function (req, res) {
   console.log(req.file);
@@ -431,11 +432,29 @@ var getWeeks = function getWeeks(s, f) {
   return weeks;
 };
 
-var getReport = function getReport() {
-  var workbook = _xlsx2.default.readFile('./uploads/book.xlsx');
+var getReportFromXls = function getReportFromXls(plotter) {
+  if (plotter < 1 || plotter > 5) {
+    errorHandler('Plotter number out of range');
+    return 'error';
+  }
+  var xlsPath = './uploads/plotter' + plotter + '.xls';
+  //console.log('xlsPath', xlsPath);
+  var workbook = _xlsx2.default.readFile(xlsPath);
   var sheet_name_list = workbook.SheetNames;
   var report = _xlsx2.default.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+  //delete report[0];
+  //console.log(report);
   return report;
+};
+
+var getReport = function getReport() {
+  var report1 = getReportFromXls(1);
+  var report2 = getReportFromXls(2);
+  var report3 = getReportFromXls(3);
+  var report4 = getReportFromXls(4);
+  var report5 = getReportFromXls(5);
+  //console.log(report1.concat(report2, report3, report4, report5));
+  return report1.concat(report2, report3, report4, report5);
 };
 
 function getMetersFromTo(start, stop) {
@@ -451,3 +470,5 @@ function getMetersFromTo(start, stop) {
   });
   return meters;
 };
+
+var errorHandler = function errorHandler(message) {};
