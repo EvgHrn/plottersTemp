@@ -5,10 +5,13 @@
 #include <Ethernet.h>
 #include "Arduino.h"
 
+#define plotterNumber  5
 #define maxPassDelay  8000
 #define passesPerMeter 80
-#define ledPin 5
-#define int5Pin 3
+#define passLedPin 5
+#define errTCPLedPin 6
+#define errRTCLedPin 7
+#define intPin 3
 
 byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };
 
@@ -24,21 +27,26 @@ EthernetClient client;
 
 RTC_DS1307 rtc;
 
-boolean inTimer5 = false;
-unsigned int passes5 = 0;
-float meters5 = 0.0;
+boolean inTimer = false;
+unsigned int passes = 0;
+float meters = 0.0;
 unsigned long id = 0;
-String startTime5 = "";
-String stopTime5 = "";
-unsigned long lastHallWorked5 = 0;
-volatile boolean isHall5 = false;
+String startTime = "";
+String stopTime = "";
+unsigned long lastHallWorked = 0;
+volatile boolean isHall = false;
 
 
 void setup() {
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
 
-  pinMode(int5Pin, INPUT_PULLUP);
+  pinMode(passLedPin, OUTPUT);
+  pinMode(errTCPLedPin, OUTPUT);
+  pinMode(errRTCLedPin, OUTPUT);
+  digitalWrite(passLedPin, LOW);
+  digitalWrite(errTCPLedPin, LOW);
+  digitalWrite(errRTCLedPin, LOW);
+
+  pinMode(intPin, INPUT_PULLUP);
 
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -48,13 +56,15 @@ void setup() {
 
   if (! rtc.begin()) {
     Serial.println(F("NoRTC"));
+    digitalWrite(errRTCLedPin, HIGH);
     while (1);
   }
 
   if (! rtc.isrunning()) {
     Serial.println(F("RTCerr"));
+    digitalWrite(errRTCLedPin, HIGH);
     // following line sets the RTC to the date & time this sketch was compiled
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     // This line sets the RTC with an explicit date & time, for example to set
     // January 21, 2014 at 3am you would call:
     // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
@@ -63,32 +73,34 @@ void setup() {
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
     Serial.println(F("errEth"));
+    digitalWrite(errTCPLedPin, HIGH);
+
     // try to congifure using IP address instead of DHCP:
     Ethernet.begin(mac, ip);
   }
   // give the Ethernet shield a second to initialize:
   delay(1000);
 
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  
+  //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+
   attachInts();
 
   Serial.println(F("SetupF"));
   delay(1000);
-  
+
   interrupts();
 }
 
 void loop() {
-  
-  if (isHall5) {
-    //digitalWrite(ledPin, HIGH);
-    hall_worked(5);
-    isHall5 = false;
+
+  if (isHall) {
+    digitalWrite(passLedPin, HIGH);
+    hall_worked();
+    isHall = false;
   }
 
-  if ((inTimer5 == true) && ((millis() - lastHallWorked5) > maxPassDelay) ) {
-    stopPrintSession(5);
+  if ((inTimer == true) && ((millis() - lastHallWorked) > maxPassDelay) ) {
+    stopPrintSession(plotterNumber);
   }
 }
 
@@ -98,6 +110,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
   String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
   //Serial.println(freeRam());
   if (client.connect(server, 3000)) {
+    digitalWrite(errTCPLedPin, LOW);
     Serial.println(post);
     // Make a HTTP request:
     client.println("POST /quotes HTTP/1.1");
@@ -112,86 +125,46 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
   } else {
     // if you didn't get a connection to the server:
     Serial.println(F("errSend"));
+    digitalWrite(errTCPLedPin, HIGH);
   }
   attachInts();
 }
 
-void hall_worked(int pl) { 
+void hall_worked() {
   //Serial.println(freeRam());
-  //Serial.print("Worked ");
-  //Serial.println(pl);
-  switch (pl) {
-    case 1: {
-      }
-      break;
-    case 2: {
-      }
-      break;
-      case 3: {
-      }
-      break;
-    case 4: {
-      }
-      break;
-      case 5: {
-        lastHallWorked5 = millis();
-        if (inTimer5 == false) {    //if we are out of timer
-          inTimer5 = true;
-          passes5 = 1;
-          meters5 = 0;
-          detachInts();
-          startTime5 = getTime();
-          attachInts();
-          Serial.print(F("Pss5: "));
-          Serial.println(passes5);
-        } else {
-          // if we are in timer
-          passes5++;
-          Serial.print(F("Pss5: "));
-          Serial.println(passes5);
-        }
-      }
-      break;
-    default: {
-      }
-      break;
+  lastHallWorked = millis();
+  if (inTimer == false) {    //if we are out of timer
+    inTimer = true;
+    passes = 1;
+    meters = 0;
+    detachInts();
+    startTime = getTime();
+    attachInts();
+    Serial.print(F("Pss: "));
+    Serial.println(passes);
+  } else {
+    // if we are in timer
+    passes++;
+    Serial.print(F("Pss: "));
+    Serial.println(passes);
   }
-  digitalWrite(ledPin, LOW);
+  digitalWrite(passLedPin, LOW);
 }
 
 void stopPrintSession(int pltoStop) {
-  //id = readId();
   id++;
-  //writeId(id);
-  switch (pltoStop) {
-    case 1: {
-      }
-      break;
-    case 2: {
-      }
-      break;
-    case 3: {
-    }
-    break;
-    case 4: {
-      }
-      break;
-      case 5: {
-        inTimer5 = false;
-        detachInts();
-        stopTime5 = getTime();
-        attachInts();
-        meters5 = passes5 / float(passesPerMeter);
-        if (passes5 > 1) {
-          sendDB(id, pltoStop, startTime5, stopTime5, passes5, meters5);
-        }
-        startTime5 = "";
-        stopTime5 = "";
-        meters5 = 0;
-        passes5 = 0;
-      }
-      break;
+  inTimer = false;
+  detachInts();
+  stopTime = getTime();
+  attachInts();
+  meters = passes / float(passesPerMeter);
+  if (passes > 1) {
+    sendDB(id, pltoStop, startTime, stopTime, passes, meters);
   }
+  startTime = "";
+  stopTime = "";
+  meters = 0;
+  passes = 0;
   //Serial.println(freeRam());
 }
 
@@ -200,22 +173,20 @@ String getTime() {
   return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()));
 }
 
-void intHall5(){
-  isHall5 = true;
+void intHall(){
+  isHall = true;
 }
 
 int freeRam () {
-  extern int __heap_start, *__brkval; 
-  int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 
 void attachInts(){
-  attachInterrupt(digitalPinToInterrupt(int5Pin), intHall5, FALLING);
+  attachInterrupt(digitalPinToInterrupt(intPin), intHall, FALLING);
 }
 
 void detachInts(){
-  detachInterrupt(digitalPinToInterrupt(int5Pin));
+  detachInterrupt(digitalPinToInterrupt(intPin));
 }
-
-
