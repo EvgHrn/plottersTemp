@@ -1,16 +1,15 @@
 <script src="http://code.jquery.com/jquery-latest.js"></script>
+<link href="./styleCompare.css" rel="stylesheet" type="text/css"/>
 
-<div id="compare">
+<div id="header">
+  <h2 id="headerText">Контроль</h2>
+</div>
 
-  <div id="header">
-    <h2 style="color: #2e6c80;">Контроль</h2>
-  </div>
+<div id="error">
+  <h2 id="errorText">{{error}}</h2>
+</div>
 
-  <div id="error">
-    <h2 style="color: #cc0000;">{{error}}</h2>
-  </div>
-
-  <link href="./styleCompare.css" rel="stylesheet" type="text/css"/>
+<div class="group">
 
   <div id="fileUploadForm">
     <form action="/upload" enctype="multipart/form-data" method="post">
@@ -20,30 +19,32 @@
     </form>
   </div>
 
-
-  <div id="compareTable">
-    <table>
-      <tr id="tableHeader">
-        <th>Дата</th>
-        <th>Метры Отчёт</th>
-        <th>Метры Датчик</th>
-        <th>Разница</th>
-      </tr>
-    {{#each report}}
-      <tr>
-        <td>{{this.Дата}}</td>
-        <td>{{this.МетрыОтчёт}}</td>
-        <td>{{this.МетрыДатчик}}</td>
-        <td class="difference">{{this.Разница}}</td>
-      </tr>
-    {{/each}}
-    </table>
+  <div id="compare">
+      <div id="compareTable">
+        <table>
+          <tr id="tableHeader">
+            <th>Дата</th>
+            <th>Метры Отчёт</th>
+            <th>Метры Датчик</th>
+            <th>Разница</th>
+          </tr>
+        {{#each report}}
+          <tr>
+            <td>{{this.Дата}}</td>
+            <td>{{this.МетрыОтчёт}}</td>
+            <td>{{this.МетрыДатчик}}</td>
+            <td class="difference">{{this.Разница}}</td>
+          </tr>
+        {{/each}}
+        </table>
+      </div>
   </div>
+
 </div>
 
-<footer id="footer">
-  <a href="http://185.154.12.69:3000/">Статистика</a>
-</footer>
+<div id="footer">
+  <a id="footerText" href="http://185.154.12.69:3000/">Статистика</a>
+</div>
 
 <script>
   $('td.difference').each(function(){

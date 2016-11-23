@@ -1,21 +1,66 @@
+.group:before, .group:after {
+    content:"";
+    display: table;
+}
+.group:after {
+    clear: both;
+}
+.group {
+    background: #eaeaed;
+    border-radius: 6px;
+    clear: both;
+    *zoom: 1;
+    max-width: 400px;
+    margin: auto;
+}
+
+#header{
+  max-width: 400px;
+  margin: auto;
+}
+
+#error{
+  max-width: 400px;
+  margin: auto;
+}
+
+#errorText{
+  color: #cc0000;
+  text-align: center;
+}
+
+#headerText{
+  color: #2e6c80;
+  text-align: center;
+}
+
+#fileUploadForm{
+  float: top;
+  margin: 1.5%;
+}
+
 #compare{
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  justify-content: top;
-  flex-direction: column;
-  overflow: auto;
+  float: top;
+  margin: 1.5%;
 }
 
 #compareTable{
   display: table;
   table-layout: fixed;
   width: 400px;
+  margin: auto;
 }
+
+#footer{
+  max-width: 400px;
+  margin: auto;
+}
+
+#footerText{
+  color: #2e6c80;
+  text-align: left;
+}
+
 
 th{
   text-align:left;

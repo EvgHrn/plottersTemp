@@ -233,8 +233,8 @@ app.get('/compare', (req, res) => {
   console.log('reports\n', reports);
   let dates = reports.map((obj) => {
     let date = moment(obj['Дата'], "DD-MM-YY").format();
-    if (!moment(date).isValid()) {
-      error = "ОШИБКА: неверная дата";
+    if (! moment(date).isValid()) {
+      error = 'ОШИБКА: неверная дата' + date;
       date = moment().format();
     }
     return date;
@@ -242,8 +242,8 @@ app.get('/compare', (req, res) => {
 
   let datesMeters = reports.map((obj) => {
     let date = moment(obj['Дата'], "DD-MM-YY").format();
-    if (!moment(date).isValid()) {
-      error = "ОШИБКА: неверная дата";
+    if (! moment(date).isValid()) {
+      error = 'ОШИБКА: неверная дата\n' + date;
       date = moment().format();
     }
     return {'Дата': moment(date).format(), 'Длина': obj['Длина']};
