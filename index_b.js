@@ -278,7 +278,7 @@ app.get('/compare', function (req, res) {
   var dates = reports.map(function (obj) {
     var date = (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format();
     if (!(0, _moment2.default)(date).isValid()) {
-      error = "ОШИБКА: неверная дата";
+      error = 'ОШИБКА: неверная дата' + date;
       date = (0, _moment2.default)().format();
     }
     return date;
@@ -287,7 +287,7 @@ app.get('/compare', function (req, res) {
   var datesMeters = reports.map(function (obj) {
     var date = (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format();
     if (!(0, _moment2.default)(date).isValid()) {
-      error = "ОШИБКА: неверная дата";
+      error = 'ОШИБКА: неверная дата\n' + date;
       date = (0, _moment2.default)().format();
     }
     return { 'Дата': (0, _moment2.default)(date).format(), 'Длина': obj['Длина'] };
