@@ -170,7 +170,7 @@ void stopPrintSession(int pltoStop) {
 
 String getTime() {
   DateTime now = rtc.now();
-  return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()));
+  return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()) + ":" + String(now.second()) + String("+4"));
 }
 
 void intHall(){

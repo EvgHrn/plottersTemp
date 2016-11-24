@@ -206,15 +206,16 @@ app.get('/input', (req, res) => {
 
 app.post('/quotes', (req, res) => {
   // console.log(req.body);
-  console.log(req.body);
+  //console.log(req.body);
   let session = new plotterSession({
     id: req.body.id,
     plotter: req.body.plotter,
-    start_time: req.body.startTime,
-    stop_time: req.body.stopTime,
+    start_time: moment(req.body.startTime).format(),
+    stop_time: moment(req.body.stopTime).format(),
     passes: req.body.passes,
     meters: req.body.meters,
   });
+  console.log('new data received\n', session);
   session.save((err) => {
     if (err) {
       console.log(err);
