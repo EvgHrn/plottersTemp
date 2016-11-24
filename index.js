@@ -210,8 +210,8 @@ app.post('/quotes', (req, res) => {
   let session = new plotterSession({
     id: req.body.id,
     plotter: req.body.plotter,
-    start_time: new Date(req.body.startTime),
-    stop_time:new Date(req.body.stopTime),
+    start_time: req.body.startTime,
+    stop_time: req.body.stopTime,
     passes: req.body.passes,
     meters: req.body.meters,
   });
