@@ -251,15 +251,16 @@ app.get('/input', function (req, res) {
 
 app.post('/quotes', function (req, res) {
   // console.log(req.body);
-  console.log(req.body);
+  //console.log(req.body);
   var session = new plotterSession({
     id: req.body.id,
     plotter: req.body.plotter,
-    start_time: req.body.startTime,
-    stop_time: req.body.stopTime,
+    start_time: (0, _moment2.default)(req.body.startTime).format(),
+    stop_time: (0, _moment2.default)(req.body.stopTime).format(),
     passes: req.body.passes,
     meters: req.body.meters
   });
+  console.log('new data received\n', session);
   session.save(function (err) {
     if (err) {
       console.log(err);
