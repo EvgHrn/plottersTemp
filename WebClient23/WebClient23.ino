@@ -25,15 +25,13 @@
 #define ledPin 5
 #define int2Pin 3
 #define int3Pin 18
-//#define maxAllowedWrites 10000
-//#define memBase 350
 
 // Enter a MAC address for your controller below.
 // Newer Ethernet shields have a MAC address printed on a sticker on the shield
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
-IPAddress server(5, 63, 159, 247); // numeric IP for Google (no DNS)
+IPAddress server(185, 154, 12, 69); // numeric IP for Google (no DNS)
 
 // Set the static IP address to use if the DHCP fails to assign
 IPAddress ip(192, 168, 0, 177);
@@ -192,7 +190,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
     Serial.println(post);
     // Make a HTTP request:
     client.println("POST /quotes HTTP/1.1");
-    client.println("Host: 5.63.159.247:3000");
+    client.println("Host: 185.154.12.69:3000");
     client.println("Cache-Control: no-cache");
     client.println("Content-Type: application/x-www-form-urlencoded");
     client.print("Content-Length: ");
@@ -402,7 +400,7 @@ void stopPrintSession(int pltoStop) {
 
 String getTime() {
   DateTime now = rtc.now();
-  return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()));
+  return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()) + ":" + String(now.second()) + String("+4"));
 }
 
 void intHall1(){
