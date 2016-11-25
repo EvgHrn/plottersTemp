@@ -296,13 +296,18 @@ app.get('/compare', function (req, res) {
 
   var datesMeters = reports.map(function (obj) {
     var date = (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format();
+    var long = obj['Длина'];
+    if (long === undefined) {
+      error = 'ОШИБКА: неуказана длина\n';
+      long = 0;
+    }
     if (!(0, _moment2.default)(date).isValid()) {
       error = 'ОШИБКА: неверная дата\n' + date;
       date = (0, _moment2.default)().format();
     }
-    return { 'Дата': (0, _moment2.default)(date).format(), 'Длина': obj['Длина'] };
+    return { 'Дата': (0, _moment2.default)(date).format(), 'Длина': long };
   });
-  console.log('datesMeters\n', datesMeters);
+  //console.log('datesMeters\n', datesMeters);
   var datesMetersUnique = datesMeters.reduce(function (arrResult, obj) {
     arrResult[obj['Дата']] = (arrResult[obj['Дата']] || 0) + parseFloat(obj['Длина']);
     return arrResult;
@@ -312,9 +317,9 @@ app.get('/compare', function (req, res) {
     datesMetersUnique_new.push({ 'Дата': key, 'МетрыОтчёт': datesMetersUnique[key] });
   }
 
-  //console.log('datesMeters\n', datesMeters);
-  //console.log('datesMetersUnique\n', datesMetersUnique);
-  //console.log('datesMetersUnique_new\n', datesMetersUnique_new);
+  console.log('datesMeters\n', datesMeters);
+  console.log('datesMetersUnique\n', datesMetersUnique);
+  console.log('datesMetersUnique_new\n', datesMetersUnique_new);
   //console.log('dates\n', dates);
   dates.sort(function (a, b) {
     if ((0, _moment2.default)(a).isBefore((0, _moment2.default)(b))) return -1;
@@ -455,17 +460,11 @@ var getWeeks = function getWeeks(s, f) {
 };
 
 var getReportFromXls = function getReportFromXls(plotter) {
-  if (plotter < 1 || plotter > 5) {
-    errorHandler('Plotter number out of range');
-    return 'error';
-  }
   var xlsPath = './uploads/plotter' + plotter + '.xls';
-  //console.log('xlsPath', xlsPath);
+  console.log('xlsPath\n', xlsPath);
   var workbook = _xlsx2.default.readFile(xlsPath);
   var sheet_name_list = workbook.SheetNames;
   var report = _xlsx2.default.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-  //delete report[0];
-  console.log(report);
   return report;
 };
 
@@ -475,7 +474,6 @@ var getReport = function getReport() {
   var report3 = getReportFromXls(3);
   var report4 = getReportFromXls(4);
   var report5 = getReportFromXls(5);
-  //console.log(report1.concat(report2, report3, report4, report5));
   return report1.concat(report2, report3, report4, report5);
 };
 
