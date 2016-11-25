@@ -252,13 +252,18 @@ app.get('/compare', (req, res) => {
 
   let datesMeters = reports.map((obj) => {
     let date = moment(obj['Дата'], "DD-MM-YY").format();
+    let long = obj['Длина'];
+    if (long === undefined) {
+      error = 'ОШИБКА: неуказана длина\n';
+      long = 0;
+    }
     if (! moment(date).isValid()) {
       error = 'ОШИБКА: неверная дата\n' + date;
       date = moment().format();
     }
-    return {'Дата': moment(date).format(), 'Длина': obj['Длина']};
+    return {'Дата': moment(date).format(), 'Длина': long};
   });
-  console.log('datesMeters\n', datesMeters);
+  //console.log('datesMeters\n', datesMeters);
   let datesMetersUnique = datesMeters.reduce((arrResult, obj) => {
     arrResult[obj['Дата']] = (arrResult[obj['Дата']] || 0) + parseFloat(obj['Длина']);
     return arrResult;
@@ -268,9 +273,9 @@ app.get('/compare', (req, res) => {
     datesMetersUnique_new.push({'Дата': key, 'МетрыОтчёт': datesMetersUnique[key]});
   }
 
-  //console.log('datesMeters\n', datesMeters);
-  //console.log('datesMetersUnique\n', datesMetersUnique);
-  //console.log('datesMetersUnique_new\n', datesMetersUnique_new);
+  console.log('datesMeters\n', datesMeters);
+  console.log('datesMetersUnique\n', datesMetersUnique);
+  console.log('datesMetersUnique_new\n', datesMetersUnique_new);
   //console.log('dates\n', dates);
   dates.sort((a, b) => {
     if (moment(a).isBefore(moment(b))) return -1;
@@ -415,17 +420,11 @@ let getWeeks = (s, f) => {
 };
 
 let getReportFromXls = (plotter) => {
-  if ((plotter < 1) || (plotter > 5)) {
-    errorHandler('Plotter number out of range');
-    return 'error';
-  }
   let xlsPath = './uploads/plotter' + plotter + '.xls';
-  //console.log('xlsPath', xlsPath);
+  console.log('xlsPath\n', xlsPath);
   let workbook = xlsx.readFile(xlsPath);
   let sheet_name_list = workbook.SheetNames;
   let report = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-  //delete report[0];
-  console.log(report);
   return report;
 };
 
@@ -435,7 +434,6 @@ let getReport = () => {
   let report3 = getReportFromXls(3);
   let report4 = getReportFromXls(4);
   let report5 = getReportFromXls(5);
-  //console.log(report1.concat(report2, report3, report4, report5));
   return report1.concat(report2, report3, report4, report5);
 };
 
