@@ -92,6 +92,15 @@ app.all('/', (req, res) => {
     }
   }
 
+  console.log('start, stop time from request\n', start);
+  console.log(stop);
+
+  start = moment(start).utc();
+  stop = moment(stop).utc();
+
+  console.log('UTC start, stop time from request\n', start);
+  console.log(stop);
+
   plotterSession.find({"start_time": { "$gte": start , "$lte": stop }}, (err, docs) => {
     if (err) {
       console.log(err);

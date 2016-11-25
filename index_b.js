@@ -137,6 +137,15 @@ app.all('/', function (req, res) {
     }
   }
 
+  console.log('start, stop time from request\n', start);
+  console.log(stop);
+
+  start = (0, _moment2.default)(start).utc();
+  stop = (0, _moment2.default)(stop).utc();
+
+  console.log('UTC start, stop time from request\n', start);
+  console.log(stop);
+
   plotterSession.find({ "start_time": { "$gte": start, "$lte": stop } }, function (err, docs) {
     if (err) {
       console.log(err);
@@ -255,8 +264,8 @@ app.post('/quotes', function (req, res) {
   var session = new plotterSession({
     id: req.body.id,
     plotter: req.body.plotter,
-    start_time: (0, _moment2.default)(req.body.startTime).format(),
-    stop_time: (0, _moment2.default)(req.body.stopTime).format(),
+    start_time: req.body.startTime,
+    stop_time: req.body.stopTime,
     passes: req.body.passes,
     meters: req.body.meters
   });
