@@ -13,7 +13,7 @@
 
   <div id="fileUploadForm">
     <form action="/upload" enctype="multipart/form-data" method="post">
-      <p><input type="file" name="upl">
+      <p><input type="file" name="upl" multiple>
         <input type="submit" value="Отправить">
       </p>
     </form>
@@ -49,6 +49,8 @@
 <script>
   $('td.difference').each(function(){
       var x = $(this).text();
-      if ((x < -5) || (x > 5)) $(this).css({color: 'red'});
+      if (x > 3) $(this).css({color: 'red'});
+      if (x < -3) $(this).css({color: 'orange'});
+      if ((x <= 3) && (x >= -3)) $(this).css({color: 'green'});
   });
 </script>

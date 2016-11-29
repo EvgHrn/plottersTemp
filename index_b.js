@@ -140,8 +140,8 @@ app.all('/', function (req, res) {
   console.log('start, stop time from request\n', start);
   console.log(stop);
 
-  start = (0, _moment2.default)(start).utc();
-  stop = (0, _moment2.default)(stop).utc();
+  start = (0, _moment2.default)(start).utc().format();
+  stop = (0, _moment2.default)(stop).utc().format();
 
   console.log('UTC start, stop time from request\n', start);
   console.log(stop);
@@ -298,8 +298,8 @@ app.get('/compare', function (req, res) {
     var date = (0, _moment2.default)(obj['Дата'], "DD-MM-YY").format();
     var long = obj['Длина'];
     if (long === undefined) {
-      error = 'ОШИБКА: неуказана длина\n';
-      long = 0;
+      error = 'ОШИБКА: не указана длина\nвставлено 0 м';
+      long = '0';
     }
     if (!(0, _moment2.default)(date).isValid()) {
       error = 'ОШИБКА: неверная дата\n' + date;
@@ -344,7 +344,7 @@ app.get('/compare', function (req, res) {
   });
 });
 
-app.post('/upload', (0, _multer2.default)({ storage: mult_storage, dest: './uploads/' }).single('upl'), function (req, res) {
+app.post('/upload', (0, _multer2.default)({ storage: mult_storage, dest: './uploads/' }).array('upl', 5), function (req, res) {
   console.log(req.file);
   res.redirect('/compare');
 });

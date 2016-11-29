@@ -95,8 +95,8 @@ app.all('/', (req, res) => {
   console.log('start, stop time from request\n', start);
   console.log(stop);
 
-  start = moment(start).utc();
-  stop = moment(stop).utc();
+  start = moment(start).utc().format();
+  stop = moment(stop).utc().format();
 
   console.log('UTC start, stop time from request\n', start);
   console.log(stop);
@@ -254,8 +254,8 @@ app.get('/compare', (req, res) => {
     let date = moment(obj['Дата'], "DD-MM-YY").format();
     let long = obj['Длина'];
     if (long === undefined) {
-      error = 'ОШИБКА: неуказана длина\n';
-      long = 0;
+      error = 'ОШИБКА: не указана длина\nвставлено 0 м';
+      long = '0';
     }
     if (! moment(date).isValid()) {
       error = 'ОШИБКА: неверная дата\n' + date;
@@ -304,7 +304,7 @@ app.get('/compare', (req, res) => {
   });
 });
 
-app.post('/upload', multer({storage: mult_storage,  dest: './uploads/'}).single('upl'), (req, res) => {
+app.post('/upload', multer({storage: mult_storage,  dest: './uploads/'}).array('upl', 5), (req, res) => {
   console.log(req.file);
   res.redirect('/compare');
 });
