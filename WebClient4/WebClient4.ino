@@ -11,9 +11,9 @@
 #define passLedPin 5
 #define errTCPLedPin 6
 #define errRTCLedPin 7
-#define intPin 3
+#define intPin 2
 
-byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };
+byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xEE };
 
 IPAddress server(185, 154, 12, 69); // numeric IP for Google (no DNS)
 
