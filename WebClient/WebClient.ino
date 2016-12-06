@@ -14,8 +14,9 @@
 #define errRTCLedPin 7
 #define errSDLedPin 8
 #define intPin 2
+#define chipSelect 4
 
-byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };  //4th plotter
+byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xEE };  //4th plotter
 //byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };  
 //byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };
 //byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };
@@ -24,7 +25,7 @@ byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };  //4th plotter
 IPAddress server(185, 154, 12, 69); // numeric IP for Google (no DNS)
 
 // Set the static IP address to use if the DHCP fails to assign
-IPAddress ip(192, 168, 0, 177);
+//IPAddress ip(192, 168, 0, 177);
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server
@@ -43,7 +44,7 @@ unsigned long lastHallWorked = 0;
 volatile boolean isHall = false;
 
 File myFile;
-const int chipSelect = 4;
+
 
 
 void setup() {
@@ -63,7 +64,7 @@ void setup() {
   digitalWrite(errSDLedPin, LOW);
   pinMode(intPin, INPUT_PULLUP);
   
-  Serial.println(F("GPIOset"));
+  //Serial.println(F("GPIOset"));
   
 
   // Open serial communications and wait for port to open:
@@ -75,7 +76,7 @@ void setup() {
     while (1);
   }
 
-  Serial.println(F("RTCbegin"));
+  //Serial.println(F("RTCbegin"));
 
   if (! rtc.isrunning()) {
     Serial.println(F("RTCerr"));
@@ -87,7 +88,7 @@ void setup() {
     // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
   }
 
-  Serial.println(F("RTCrun"));
+  //Serial.println(F("RTCrun"));
 
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
@@ -95,12 +96,12 @@ void setup() {
     digitalWrite(errTCPLedPin, HIGH);
 
     // try to congifure using IP address instead of DHCP:
-    Ethernet.begin(mac, ip);
+    //Ethernet.begin(mac, ip);
   }
   // give the Ethernet shield a second to initialize:
   delay(1000);
 
-  Serial.println(F("EthSet"));
+  //Serial.println(F("EthSet"));
 
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
@@ -110,7 +111,7 @@ void setup() {
     while(1);
   }
 
-  Serial.println(F("SDset"));
+  //Serial.println(F("SDset"));
 
   if (SD.exists("log.txt")) {
     Serial.println("fileExists");
@@ -151,11 +152,11 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
     digitalWrite(errTCPLedPin, LOW);
     Serial.println(post);
     // Make a HTTP request:
-    client.println("POST /quotes HTTP/1.1");
-    client.println("Host: 185.154.12.69:3000");
-    client.println("Cache-Control: no-cache");
-    client.println("Content-Type: application/x-www-form-urlencoded");
-    client.print("Content-Length: ");
+    client.println(F("POST /quotes HTTP/1.1"));
+    client.println(F("Host: 185.154.12.69:3000"));
+    client.println(F("Cache-Control: no-cache"));
+    client.println(F("Content-Type: application/x-www-form-urlencoded"));
+    client.print(F("Content-Length: "));
     client.println(post.length());
     client.println();
     client.println(post);
@@ -244,7 +245,7 @@ void sdWrite(String post){
   }
   // if the file isn't open, pop up an error:
   else {
-    Serial.println("fileFail");
+    Serial.println(F("fileFail"));
     digitalWrite(errSDLedPin, HIGH);
   }
 }
