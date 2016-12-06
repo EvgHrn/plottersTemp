@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include "Arduino.h"
+#include <SD.h>
 
 #define plotterNumber  4
 #define maxPassDelay  8000
@@ -11,6 +12,7 @@
 #define passLedPin 5
 #define errTCPLedPin 6
 #define errRTCLedPin 7
+#define errSDLedPin 8
 #define intPin 2
 
 byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };  //4th plotter
@@ -40,6 +42,9 @@ String stopTime = "";
 unsigned long lastHallWorked = 0;
 volatile boolean isHall = false;
 
+File myFile;
+const int chipSelect = 4;
+
 
 void setup() {
 
@@ -51,9 +56,11 @@ void setup() {
   pinMode(passLedPin, OUTPUT);
   pinMode(errTCPLedPin, OUTPUT);
   pinMode(errRTCLedPin, OUTPUT);
+  pinMode(errSDLedPin, OUTPUT);
   digitalWrite(passLedPin, LOW);
   digitalWrite(errTCPLedPin, LOW);
   digitalWrite(errRTCLedPin, LOW);
+  digitalWrite(errSDLedPin, LOW);
   pinMode(intPin, INPUT_PULLUP);
   
   Serial.println(F("GPIOset"));
@@ -96,6 +103,21 @@ void setup() {
   Serial.println(F("EthSet"));
 
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+
+  if (!SD.begin(chipSelect)) {
+    Serial.println(F("SDfail"));
+    digitalWrite(errSDLedPin, HIGH);
+    while(1);
+  }
+
+  Serial.println(F("SDset"));
+
+  if (SD.exists("log.txt")) {
+    Serial.println("fileExists");
+  } else {
+    digitalWrite(errSDLedPin, HIGH);
+    Serial.println("fileFail");
+  }
 
   attachInts();
 
@@ -142,6 +164,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
     // if you didn't get a connection to the server:
     Serial.println(F("errSend"));
     digitalWrite(errTCPLedPin, HIGH);
+    sdWrite(post);
   }
   attachInts();
 }
@@ -206,3 +229,25 @@ void attachInts(){
 void detachInts(){
   detachInterrupt(digitalPinToInterrupt(intPin));
 }
+
+void sdWrite(String post){
+  
+  File dataFile = SD.open("log.txt", FILE_WRITE);
+  
+  // if the file is available, write to it:
+  if (dataFile) {
+    dataFile.println(post);
+    dataFile.close();
+    // print to the serial port too:
+    Serial.print(F("Write SD: "));
+    Serial.println(post);
+  }
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.println("fileFail");
+    digitalWrite(errSDLedPin, HIGH);
+  }
+}
+
+
+
