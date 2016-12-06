@@ -8027,9 +8027,9 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <instance part="JP4_LEDS" gate="A" x="30.48" y="20.32" rot="R180"/>
 <instance part="R1" gate="G$1" x="66.04" y="20.32" rot="R90"/>
 <instance part="P+1" gate="VCC" x="96.52" y="25.4"/>
-<instance part="P+2" gate="VCC" x="73.66" y="5.08"/>
+<instance part="P+2" gate="VCC" x="53.34" y="5.08"/>
 <instance part="GND1" gate="1" x="93.98" y="7.62"/>
-<instance part="GND2" gate="1" x="71.12" y="-15.24"/>
+<instance part="GND2" gate="1" x="55.88" y="-15.24"/>
 <instance part="GND3" gate="1" x="40.64" y="33.02"/>
 <instance part="R2_LED" gate="G$1" x="43.18" y="25.4"/>
 <instance part="R3_LED" gate="G$1" x="43.18" y="22.86"/>
@@ -8048,14 +8048,10 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <segment>
 <pinref part="R1" gate="G$1" pin="2"/>
 <wire x1="66.04" y1="25.4" x2="66.04" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="66.04" y1="27.94" x2="73.66" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="73.66" y1="27.94" x2="86.36" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="66.04" y1="27.94" x2="86.36" y2="27.94" width="0.1524" layer="91"/>
 <wire x1="86.36" y1="27.94" x2="86.36" y2="22.86" width="0.1524" layer="91"/>
 <pinref part="JP3_HALL" gate="A" pin="3"/>
 <wire x1="86.36" y1="22.86" x2="81.28" y2="22.86" width="0.1524" layer="91"/>
-<pinref part="JP1" gate="G$1" pin="15"/>
-<wire x1="73.66" y1="40.64" x2="73.66" y2="27.94" width="0.1524" layer="91"/>
-<junction x="73.66" y="27.94"/>
 </segment>
 </net>
 <net name="VCC" class="0">
@@ -8071,15 +8067,15 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="81.28" y1="17.78" x2="96.52" y2="17.78" width="0.1524" layer="91"/>
 </segment>
 <segment>
+<pinref part="JP2" gate="A" pin="11"/>
+<pinref part="P+2" gate="VCC" pin="VCC"/>
+<wire x1="53.34" y1="-5.08" x2="53.34" y2="2.54" width="0.1524" layer="91"/>
+</segment>
+<segment>
 <pinref part="JP3_RTC" gate="A" pin="4"/>
 <wire x1="17.78" y1="22.86" x2="27.94" y2="22.86" width="0.1524" layer="91"/>
 <pinref part="P+3" gate="VCC" pin="VCC"/>
 <wire x1="27.94" y1="22.86" x2="27.94" y2="33.02" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="P+2" gate="VCC" pin="VCC"/>
-<pinref part="JP2" gate="A" pin="3"/>
-<wire x1="73.66" y1="2.54" x2="73.66" y2="-5.08" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="GND" class="0">
@@ -8088,6 +8084,11 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="81.28" y1="20.32" x2="93.98" y2="20.32" width="0.1524" layer="91"/>
 <pinref part="GND1" gate="1" pin="GND"/>
 <wire x1="93.98" y1="10.16" x2="93.98" y2="20.32" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="GND2" gate="1" pin="GND"/>
+<pinref part="JP2" gate="A" pin="10"/>
+<wire x1="55.88" y1="-12.7" x2="55.88" y2="-5.08" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="JP1" gate="G$1" pin="2"/>
@@ -8100,11 +8101,6 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="20.32" y1="25.4" x2="20.32" y2="2.54" width="0.1524" layer="91"/>
 <pinref part="GND4" gate="1" pin="GND"/>
 <wire x1="20.32" y1="2.54" x2="22.86" y2="2.54" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="GND2" gate="1" pin="GND"/>
-<pinref part="JP2" gate="A" pin="4"/>
-<wire x1="71.12" y1="-12.7" x2="71.12" y2="-5.08" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$2" class="0">

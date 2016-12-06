@@ -13,7 +13,11 @@
 #define errRTCLedPin 7
 #define intPin 2
 
-byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xEE };
+byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };  //4th plotter
+//byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };  
+//byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };
+//byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };
+//byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED };
 
 IPAddress server(185, 154, 12, 69); // numeric IP for Google (no DNS)
 
@@ -39,26 +43,32 @@ volatile boolean isHall = false;
 
 void setup() {
 
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+
   pinMode(passLedPin, OUTPUT);
   pinMode(errTCPLedPin, OUTPUT);
   pinMode(errRTCLedPin, OUTPUT);
   digitalWrite(passLedPin, LOW);
   digitalWrite(errTCPLedPin, LOW);
   digitalWrite(errRTCLedPin, LOW);
-
   pinMode(intPin, INPUT_PULLUP);
+  
+  Serial.println(F("GPIOset"));
+  
 
   // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
+  
 
   if (! rtc.begin()) {
     Serial.println(F("NoRTC"));
     digitalWrite(errRTCLedPin, HIGH);
     while (1);
   }
+
+  Serial.println(F("RTCbegin"));
 
   if (! rtc.isrunning()) {
     Serial.println(F("RTCerr"));
@@ -69,6 +79,8 @@ void setup() {
     // January 21, 2014 at 3am you would call:
     // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
   }
+
+  Serial.println(F("RTCrun"));
 
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
@@ -81,12 +93,16 @@ void setup() {
   // give the Ethernet shield a second to initialize:
   delay(1000);
 
+  Serial.println(F("EthSet"));
+
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
   attachInts();
 
   Serial.println(F("SetupF"));
   delay(1000);
+
+  Serial.println(getTime());
 
   interrupts();
 }
