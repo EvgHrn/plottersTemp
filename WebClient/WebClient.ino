@@ -14,7 +14,11 @@
 #define errRTCLedPin 7
 #define errSDLedPin 8
 #define intPin 2
-#define chipSelect 4
+#define w5100Select 4
+#define sdSelect 10
+
+#define SWITCH_TO_W5100 digitalWrite(w5100Select,HIGH); digitalWrite(sdSelect,LOW)
+#define SWITCH_TO_SD digitalWrite(sdSelect,HIGH); digitalWrite(w5100Select,LOW)
 
 byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xEE };  //4th plotter
 //byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xED }; //plotter 5
@@ -56,6 +60,10 @@ void setup() {
   pinMode(errTCPLedPin, OUTPUT);
   pinMode(errRTCLedPin, OUTPUT);
   pinMode(errSDLedPin, OUTPUT);
+
+  pinMode(sdSelect, OUTPUT);
+  pinMode(w5100Select, OUTPUT);
+  
   digitalWrite(passLedPin, LOW);
   digitalWrite(errTCPLedPin, LOW);
   digitalWrite(errRTCLedPin, LOW);
@@ -74,8 +82,6 @@ void setup() {
     while (1);
   }
 
-  //Serial.println(F("RTCbegin"));
-
   if (! rtc.isrunning()) {
     Serial.println(F("RTCerr"));
     digitalWrite(errRTCLedPin, HIGH);
@@ -86,33 +92,29 @@ void setup() {
     // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
   }
 
-  //Serial.println(F("RTCrun"));
-
   // start the Ethernet connection:
+
+  SWITCH_TO_W5100;
+  
   if (Ethernet.begin(mac) == 0) {
     Serial.println(F("errEth"));
     digitalWrite(errTCPLedPin, HIGH);
-
-    // try to congifure using IP address instead of DHCP:
-    //Ethernet.begin(mac, ip);
   }
   // give the Ethernet shield a second to initialize:
   delay(1000);
 
-  //Serial.println(F("EthSet"));
-
   //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
-  if (!SD.begin(chipSelect)) {
+  SWITCH_TO_SD;
+
+  if (!SD.begin(4)) {
     Serial.println(F("SDfail"));
     digitalWrite(errSDLedPin, HIGH);
     while(1);
   }
 
-  //Serial.println(F("SDset"));
-
   if (SD.exists("log.txt")) {
-    Serial.println("fileExists");
+    ;
   } else {
     digitalWrite(errSDLedPin, HIGH);
     Serial.println("fileFail");
@@ -146,6 +148,7 @@ void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _pa
   detachInts();
   String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
   //Serial.println(freeRam());
+  SWITCH_TO_W5100;
   if (client.connect(server, 3000)) {
     digitalWrite(errTCPLedPin, LOW);
     Serial.println(post);
@@ -230,6 +233,8 @@ void detachInts(){
 }
 
 void sdWrite(String post){
+
+  SWITCH_TO_SD;
   
   File dataFile = SD.open("log.txt", FILE_WRITE);
   
