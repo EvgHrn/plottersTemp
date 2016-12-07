@@ -27,12 +27,6 @@ byte mac[] = { 0xDA, 0xAE, 0xBE, 0xEF, 0xFE, 0xEE };  //4th plotter
 
 IPAddress server(185, 154, 12, 69); // numeric IP for Google (no DNS)
 
-// Set the static IP address to use if the DHCP fails to assign
-//IPAddress ip(192, 168, 0, 177);
-
-// Initialize the Ethernet client library
-// with the IP address and port of the server
-// that you want to connect to (port 80 is default for HTTP):
 EthernetClient client;
 
 RTC_DS1307 rtc;
@@ -43,13 +37,10 @@ float meters = 0.0;
 unsigned long id = 0;
 //String startTime = "";
 //String stopTime = "";
-char startTime[50] = "";
-char stopTime[50] = "";
+char startTime[17] = "";
+char stopTime[17] = "";
 unsigned long lastHallWorked = 0;
 volatile boolean isHall = false;
-
-
-
 
 void setup() {
 
@@ -62,15 +53,15 @@ void setup() {
   pinMode(errTCPLedPin, OUTPUT);
   pinMode(errRTCLedPin, OUTPUT);
   pinMode(errSDLedPin, OUTPUT);
-
   pinMode(sdSelect, OUTPUT);
   pinMode(w5100Select, OUTPUT);
+  pinMode(intPin, INPUT_PULLUP);
   
   digitalWrite(passLedPin, LOW);
   digitalWrite(errTCPLedPin, LOW);
   digitalWrite(errRTCLedPin, LOW);
   digitalWrite(errSDLedPin, LOW);
-  pinMode(intPin, INPUT_PULLUP);
+  
   
   //Serial.println(F("GPIOset"));
   
@@ -145,22 +136,41 @@ void loop() {
   }
 }
 
-void sendDB(int _id, byte _plotter, char _startTime[], char _stopTime[], int _passes, float _meters) {
+void sendDB(int _id, byte _plotter, char* _startTime, char* _stopTime, int _passes, float _meters) {
   //Serial.println(freeRam());
   detachInts();
+  char temp[10];
+  
   char post[100];
+  
   strcat(post, "id=");
-  strcat(post, _id);
+  
+  sprintf (temp, "%d", _id);
+  strcat(post, temp);
+  
   strcat(post, "&plotter=");
-  strcat(post, _plotter);
+
+  sprintf (temp, "%d", _plotter);
+  strcat(post, temp);
+  
   strcat(post, "&startTime=");
+  
   strcat(post, _startTime);
+  
   strcat(post, "&stopTime=");
+  
   strcat(post, _stopTime);
+
   strcat(post, "&passes=");
-  strcat(post, _passes);
+
+  sprintf (temp, "%d", _passes);
+  strcat(post, temp);
+  
   strcat(post, "&meters=");
-  strcat(post, _meters);
+
+  sprintf (temp, "%f", _meters);
+  strcat(post, temp);
+  
   //Serial.println(freeRam());
   SWITCH_TO_W5100;
   if (client.connect(server, 3000)) {
@@ -172,7 +182,7 @@ void sendDB(int _id, byte _plotter, char _startTime[], char _stopTime[], int _pa
     client.println(F("Cache-Control: no-cache"));
     client.println(F("Content-Type: application/x-www-form-urlencoded"));
     client.print(F("Content-Length: "));
-    client.println(post.length());
+    client.println(100);
     client.println();
     client.println(post);
     client.stop();
@@ -193,7 +203,7 @@ void hall_worked() {
     passes = 1;
     meters = 0;
     detachInts();
-    startTime = getTime();
+    strcpy(startTime, getTime());
     attachInts();
     Serial.print(F("Pss: "));
     Serial.println(passes);
@@ -210,14 +220,14 @@ void stopPrintSession(int pltoStop) {
   id++;
   inTimer = false;
   detachInts();
-  stopTime = getTime();
+  strcpy(stopTime, getTime());
   attachInts();
   meters = passes / float(passesPerMeter);
   if (passes > 1) {
     sendDB(id, pltoStop, startTime, stopTime, passes, meters);
   }
-  startTime = "";
-  stopTime = "";
+  startTime[0] = (char)0;
+  stopTime[0] = (char)0;
   meters = 0;
   passes = 0;
   //Serial.println(freeRam());
@@ -225,18 +235,30 @@ void stopPrintSession(int pltoStop) {
 
 char* getTime() {
   DateTime now = rtc.now();
-  return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()) );
+  char result[17];
+  strcat(result, now.year());
+  strcat(result, "-");
+  strcat(result, now.month());
+  strcat(result, "-");
+  strcat(result, now.day());
+  strcat(result, " ");
+  strcat(result, now.hour());
+  strcat(result, ":");
+  strcat(result, now.minute());
+
+  return result;
+  //return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()) );
 }
 
 void intHall(){
   isHall = true;
 }
 
-int freeRam () {
-  extern int __heap_start, *__brkval;
-  int v;
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
+//int freeRam () {
+//  extern int __heap_start, *__brkval;
+//  int v;
+//  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+//}
 
 void attachInts(){
   attachInterrupt(digitalPinToInterrupt(intPin), intHall, FALLING);
@@ -246,7 +268,7 @@ void detachInts(){
   detachInterrupt(digitalPinToInterrupt(intPin));
 }
 
-void sdWrite(String post){
+void sdWrite(char* post){
 
   SWITCH_TO_SD;
   
