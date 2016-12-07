@@ -41,8 +41,10 @@ boolean inTimer = false;
 unsigned int passes = 0;
 float meters = 0.0;
 unsigned long id = 0;
-String startTime = "";
-String stopTime = "";
+//String startTime = "";
+//String stopTime = "";
+char startTime[50] = "";
+char stopTime[50] = "";
 unsigned long lastHallWorked = 0;
 volatile boolean isHall = false;
 
@@ -143,10 +145,22 @@ void loop() {
   }
 }
 
-void sendDB(int _id, byte _plotter, String _startTime, String _stopTime, int _passes, float _meters) {
+void sendDB(int _id, byte _plotter, char _startTime[], char _stopTime[], int _passes, float _meters) {
   //Serial.println(freeRam());
   detachInts();
-  String post = String("id=") + _id + String("&plotter=") + _plotter + String("&startTime=") + _startTime + String("&stopTime=") + _stopTime + String("&passes=") + _passes + String("&meters=") + _meters;
+  char post[100];
+  strcat(post, "id=");
+  strcat(post, _id);
+  strcat(post, "&plotter=");
+  strcat(post, _plotter);
+  strcat(post, "&startTime=");
+  strcat(post, _startTime);
+  strcat(post, "&stopTime=");
+  strcat(post, _stopTime);
+  strcat(post, "&passes=");
+  strcat(post, _passes);
+  strcat(post, "&meters=");
+  strcat(post, _meters);
   //Serial.println(freeRam());
   SWITCH_TO_W5100;
   if (client.connect(server, 3000)) {
@@ -209,7 +223,7 @@ void stopPrintSession(int pltoStop) {
   //Serial.println(freeRam());
 }
 
-String getTime() {
+char* getTime() {
   DateTime now = rtc.now();
   return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()) );
 }
