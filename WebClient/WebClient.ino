@@ -234,17 +234,36 @@ void stopPrintSession(int pltoStop) {
 }
 
 char* getTime() {
+  char y[4];
+  char m[2];
+  char d[2];
+  char h[2];
+  char mi[2];
   DateTime now = rtc.now();
   char result[17];
-  strcat(result, now.year());
+  
+  sprintf (y, "%d", now.year());
+  strcat(result, y);
+  
   strcat(result, "-");
-  strcat(result, now.month());
+  
+  sprintf (m, "%d", now.month());
+  strcat(result, m);
+  
   strcat(result, "-");
-  strcat(result, now.day());
+  
+  sprintf (d, "%d", now.day());
+  strcat(result, d);
+  
   strcat(result, " ");
-  strcat(result, now.hour());
+
+  sprintf (h, "%d", now.hour());
+  strcat(result, h);
+
   strcat(result, ":");
-  strcat(result, now.minute());
+
+  sprintf (mi, "%d", now.minute());
+  strcat(result, mi);
 
   return result;
   //return String(String(now.year()) + "-" + String(now.month()) + "-" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute()) );
