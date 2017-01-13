@@ -13,9 +13,9 @@ import multer from 'multer';
 import xlsx from 'xlsx';
 //import "babel-polyfill";
 
-var FileStore = require('session-file-store')(session);
+let FileStore = require('session-file-store')(session);
 
-var mult_storage = multer.diskStorage({
+let mult_storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, './uploads/')
   },
@@ -25,9 +25,11 @@ var mult_storage = multer.diskStorage({
 });
 
 mongoose.Promise = global.Promise;
-let connectionString = 'mongodb://user1:' + process.env.MONGOPASS + '@ds029496.mlab.com:29496/plottersdb_test';
+const connectionString = 'mongodb://user1:' + process.env.MONGOPASS + '@ds029496.mlab.com:29496/plottersdb_test';
 mongoose.connect(connectionString, (err, database) => {
-  if (err) return console.log(err);
+  if (err) {
+    throw new Error('Mongoose connect error');;
+  }
   app.listen(app.get('port'), () => {
     console.log('Express started on port ' + app.get('port'));
   });
@@ -105,7 +107,7 @@ app.all('/', (req, res) => {
     if (err) {
       console.log(err);
     }
-    let maxDatasOnChart = 5;
+    const maxDatasOnChart = 5;
     let sum1 = parseFloat(calcSumMeters(1, docs));
     let sum2 = parseFloat(calcSumMeters(2, docs));
     let sum3 = parseFloat(calcSumMeters(3, docs));
