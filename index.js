@@ -11,6 +11,8 @@ import quiche from 'quiche';
 import session from 'express-session';
 import multer from 'multer';
 import xlsx from 'xlsx';
+import fs from 'fs';
+import isValid from './utils/validator.js';
 //import "babel-polyfill";
 
 let FileStore = require('session-file-store')(session);
@@ -215,27 +217,46 @@ app.get('/input', (req, res) => {
   res.render('input');
 });
 
-app.post('/quotes', (req, res) => {
+app.post('/quotes', (req, res) => {   //reqiest from arduino to save data to db
   // console.log(req.body);
   //console.log(req.body);
-  let session = new plotterSession({
-    id: req.body.id,
-    plotter: req.body.plotter,
-    start_time: req.body.startTime,
-    stop_time: req.body.stopTime,
-    passes: req.body.passes,
-    meters: req.body.meters,
-  });
-  console.log('new data received\n', session);
-  session.save((err) => {
-    if (err) {
-      console.log(err);
-    }
-    else {
-      console.log('plotterSession saved');
-    }
-  });
-
+  const bodyId = req.body.id;
+  const bodyPlotter = req.body.id;
+  const bodyStartTime = req.body.id;
+  const bodyStopTimed = req.body.id;
+  const bodyPasses = req.body.id;
+  const bodyMeters = req.body.id;
+  const bodyJSON = {
+    id: bodyId,
+    plotter: bodyPlotter,
+    start_time: bodyStartTime,
+    stop_time: bodyStopTimed,
+    passes: bodyPasses,
+    meters: bodyMeters,
+  };
+  const validation = isValid(bodyJSON);
+  if (validation === true) {
+    const session = new plotterSession(bodyJSON);
+    console.log('new data received\n', bodyJSON);
+    session.save((err) => {
+      if (err) {
+        fs.appendFile('../errorLogs/errorDB.log', bodyJSON, (err) => {
+          if (err) throw err;
+          console.log('saving to db error, data saved to log');
+        });
+        console.log(err);
+      }
+      else {
+        console.log('plotterSession saved');
+      }
+    });
+  } else {
+    console.log('validation error: ', validation);
+    fs.appendFile('../errorLogs/errorValid.log', bodyJSON, (err) => {
+      if (err) throw err;
+      console.log('The non-valid data from plotter was appended to file');
+    });
+  }
   res.redirect('/');
 });
 
