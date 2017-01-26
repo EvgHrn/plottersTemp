@@ -221,11 +221,11 @@ app.post('/quotes', (req, res) => {   //reqiest from arduino to save data to db
   // console.log(req.body);
   //console.log(req.body);
   const bodyId = req.body.id;
-  const bodyPlotter = req.body.id;
-  const bodyStartTime = req.body.id;
-  const bodyStopTimed = req.body.id;
-  const bodyPasses = req.body.id;
-  const bodyMeters = req.body.id;
+  const bodyPlotter = req.body.plotter;
+  const bodyStartTime = req.body.startTime;
+  const bodyStopTimed = req.body.stopTime;
+  const bodyPasses = req.body.passes;
+  const bodyMeters = req.body.meters;
   const bodyJSON = {
     id: bodyId,
     plotter: bodyPlotter,
